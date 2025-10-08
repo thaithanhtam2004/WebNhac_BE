@@ -1,25 +1,42 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import morgan from "morgan";
+require("dotenv").config();
+const express = require("express");
+// const cors = require("./utils/config/cors.config");
 
-import { userRouter } from "./src/web/routers/userRouter.js";
-import { errorHandler } from "./src/web/middlewares/errorHandler.js";
-
-dotenv.config();
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-app.use(morgan("dev"));
-
-// Routers
-app.use("/api/users", userRouter);
-
-// Middleware xử lý lỗi
-app.use(errorHandler);
+// 🔍 Debug thông tin môi trường
+console.log("✅ PORT from .env:", process.env.PORT);
+console.log("✅ HOST from .env:", process.env.HOST_NAME);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+const HOST = process.env.HOST_NAME || "localhost";
+
+// 🧩 Middleware
+app.use(express.json());
+
+
+// 🧠 Routes
+const userRoutes = require("./src/web/routers/userRouter");
+app.use("/api/users", userRoutes);
+
+// 🏠 Route kiểm tra API
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "🚀 User API đang hoạt động!",
+  });
+});
+
+// 🧯 Xử lý lỗi toàn cục
+app.use((err, req, res, next) => {
+  console.error("❌ Error:", err.stack);
+  res.status(500).json({
+    success: false,
+    message: "Lỗi máy chủ nội bộ",
+  });
+});
+
+// 🚀 Khởi động server
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Server đang chạy tại: http://${HOST}:${PORT}`);
 });
