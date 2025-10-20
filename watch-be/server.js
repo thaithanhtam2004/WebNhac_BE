@@ -14,18 +14,27 @@ const HOST = process.env.HOST_NAME || "localhost";
 // 🧩 Middleware
 app.use(express.json());
 
+const songRouter = require("./src/web/routers/songRouter");
+const playlistRouter = require("./src/web/routers/playlistRouter");
+const favoriteRouter = require("./src/web/routers/favoriteRouter");
+const historyRouter = require("./src/web/routers/historyRouter");
+
+app.use("/api/songs", songRouter);
+app.use("/api/playlists", playlistRouter);
+app.use("/api/favorites", favoriteRouter);
+app.use("/api/history", historyRouter);
 
 // 🧠 Routes
-const userRoutes = require("./src/web/routers/userRouter");
-app.use("/api/users", userRoutes);
+// const userRoutes = require("./src/web/routers/userRouter");
+// app.use("/api/users", userRoutes);
 
 // 🏠 Route kiểm tra API
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "🚀 User API đang hoạt động!",
-  });
-});
+// app.get("/", (req, res) => {
+//   res.json({
+//     success: true,
+//     message: "🚀 User API đang hoạt động!",
+//   });
+// });
 
 // 🧯 Xử lý lỗi toàn cục
 app.use((err, req, res, next) => {
