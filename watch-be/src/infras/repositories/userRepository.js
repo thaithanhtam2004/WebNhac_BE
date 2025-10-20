@@ -2,14 +2,14 @@ const pool = require('../db/connection').promise();
 const bcrypt = require('bcrypt');
 
 const UserRepository = {
-  // 🔍 Tìm người dùng theo email
+  // Tìm người dùng theo email
   async findByEmail(email) {
     const sql = 'SELECT * FROM User WHERE email = ?';
     const [rows] = await pool.query(sql, [email]);
     return rows.length > 0 ? rows[0] : null;
   },
 
-  // 🔍 Lấy người dùng + mật khẩu (cho đăng nhập)
+  // Lấy người dùng + mật khẩu (cho đăng nhập)
   async findUserWithPassword(email) {
     const sql = `
       SELECT userId, password, roleId, name
@@ -20,7 +20,7 @@ const UserRepository = {
     return rows.length > 0 ? rows[0] : null;
   },
 
-  // 📋 Lấy tất cả người dùng
+  // Lấy tất cả người dùng
   async findAll() {
     const sql = `
       SELECT userId, name, email, phone, roleId, isActive, createdAt
@@ -31,7 +31,7 @@ const UserRepository = {
     return rows;
   },
 
-  // ➕ Tạo tài khoản người dùng
+  // Tạo tài khoản người dùng
   async create({ name, email, phone, password, roleId = 2 }) {
     const passwordHash = await bcrypt.hash(password, 10);
 
@@ -57,14 +57,14 @@ const UserRepository = {
     };
   },
 
-  // 🔍 Lấy người dùng theo ID
+  // Lấy người dùng theo ID
   async findById(userId) {
     const sql = 'SELECT * FROM User WHERE userId = ?';
     const [rows] = await pool.query(sql, [userId]);
     return rows.length > 0 ? rows[0] : null;
   },
 
-  // ✏️ Cập nhật thông tin người dùng
+  // Cập nhật thông tin người dùng
   async update(userId, data) {
     const fields = Object.keys(data);
     const values = Object.values(data);
@@ -78,7 +78,7 @@ const UserRepository = {
     return result.affectedRows > 0;
   },
 
-  // 🔑 Đổi mật khẩu
+  // Đổi mật khẩu
   async changePassword(userId, newPassword) {
     const hash = await bcrypt.hash(newPassword, 10);
     const sql = 'UPDATE User SET password = ? WHERE userId = ?';
@@ -86,7 +86,7 @@ const UserRepository = {
     return result.affectedRows > 0;
   },
 
-  // ❌ Xóa (hoặc vô hiệu hóa) người dùng
+  // Xóa (hoặc vô hiệu hóa) người dùng
   async delete(userId, { softDelete = true } = {}) {
     if (softDelete) {
       const sql = 'UPDATE User SET isActive = FALSE WHERE userId = ?';

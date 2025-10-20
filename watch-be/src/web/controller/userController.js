@@ -3,28 +3,39 @@ const UserService = require("../../services/userService");
 class UserController {
   // 🟢 Đăng ký
   async register(req, res) {
-    try {
-      const { email, password } = req.body;
-      if (!email || !password) {
-        return res.status(400).json({
-          success: false,
-          message: "Email và mật khẩu là bắt buộc",
-        });
-      }
+  try {
+    const { email, phone, password } = req.body;
 
-      const user = await UserService.register(req.body);
-      res.status(201).json({
-        success: true,
-        message: "Đăng ký thành công",
-        data: user,
-      });
-    } catch (err) {
-      res.status(400).json({
+    // 🔹 Bắt buộc: phải có email hoặc số điện thoại
+    if ((!email || email.trim() === '') && (!phone || phone.trim() === '')) {
+      return res.status(400).json({
         success: false,
-        message: err.message || "Đăng ký thất bại",
+        message: "Phải cung cấp ít nhất email hoặc số điện thoại",
       });
     }
+
+    // 🔹 Bắt buộc: password
+    if (!password || password.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: "Mật khẩu là bắt buộc",
+      });
+    }
+
+    const user = await UserService.register(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Đăng ký thành công",
+      data: user,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message || "Đăng ký thất bại",
+    });
   }
+}
+
 
   // 🟢 Đăng nhập
   async login(req, res) {
