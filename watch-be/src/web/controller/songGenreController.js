@@ -1,6 +1,6 @@
 const SongGenreService = require("../../services/songGenreService");
 
-class SongGenreController {
+const SongGenreController = {
   // Lấy danh sách thể loại của bài hát
   async getGenresBySong(req, res) {
     try {
@@ -16,7 +16,7 @@ class SongGenreController {
         message: err.message || "Không thể lấy danh sách thể loại của bài hát",
       });
     }
-  }
+  },
 
   // Lấy danh sách bài hát theo thể loại
   async getSongsByGenre(req, res) {
@@ -33,24 +33,25 @@ class SongGenreController {
         message: err.message || "Không thể lấy danh sách bài hát theo thể loại",
       });
     }
-  }
+  },
 
   // Thêm thể loại cho bài hát
-  async addGenreToSong(req, res) {
-    try {
-      const { songId, genreId } = req.params;
-      const result = await SongGenreService.addGenreToSong(songId, genreId);
-      res.status(201).json({
-        success: true,
-        message: result.message,
-      });
-    } catch (err) {
-      res.status(400).json({
-        success: false,
-        message: err.message || "Thêm thể loại cho bài hát thất bại",
-      });
-    }
+ async addGenreToSong(req, res) {
+  try {
+    const { songId, genreId } = req.body; // <-- dùng body thay vì params
+    const result = await SongGenreService.addGenreToSong(songId, genreId);
+    res.status(201).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message || "Thêm thể loại cho bài hát thất bại",
+    });
   }
+}
+,
 
   // Xóa thể loại khỏi bài hát
   async removeGenreFromSong(req, res) {
@@ -67,7 +68,7 @@ class SongGenreController {
         message: err.message || "Xóa thể loại khỏi bài hát thất bại",
       });
     }
-  }
+  },
 
   // Cập nhật toàn bộ danh sách thể loại cho bài hát
   async updateSongGenres(req, res) {
@@ -93,7 +94,7 @@ class SongGenreController {
         message: err.message || "Cập nhật danh sách thể loại thất bại",
       });
     }
-  }
-}
+  },
+};
 
-module.exports = new SongGenreController();
+module.exports = SongGenreController;

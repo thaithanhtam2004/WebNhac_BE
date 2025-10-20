@@ -3,30 +3,33 @@ const express = require("express");
 
 const app = express();
 
+// Lấy cấu hình môi trường
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST_NAME || "localhost";
+
 // Debug thông tin môi trường
 console.log("PORT from .env:", process.env.PORT);
 console.log("HOST from .env:", process.env.HOST_NAME);
 
-const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST_NAME || "localhost";
-
 // Middleware
 app.use(express.json());
 
-const userRoutes = require("./src/web/routers/userRouter");
-app.use("/api/users", userRoutes);
-
+// Routes
 const genreRoutes = require("./src/web/routers/genreRoute");
-app.use("/api/genres", genreRoutes);
-
-// const songGenreRoutes = require("./src/web/routers/songGenreRouter");
-// app.use("/api/song-genres", songGenreRoutes);
-
-// const albumSongRoutes = require("./src/web/routers/albumSongRoute")
-// app.use("/api/albumSongs", albumSongRoutes);
-
+const songGenreRoutes = require("./src/web/routers/songGenreRouter");
 const featureRoutes = require("./src/web/routers/songFeatureRoute");
+const songRouter = require("./src/web/routers/songRouter");
+const playlistRouter = require("./src/web/routers/playlistRouter");
+const favoriteRouter = require("./src/web/routers/favoriteRouter");
+const historyRouter = require("./src/web/routers/historyRouter");
+
+app.use("/api/genres", genreRoutes);
+app.use("/api/song-genres", songGenreRoutes);
 app.use("/api/features", featureRoutes);
+app.use("/api/songs", songRouter);
+app.use("/api/playlists", playlistRouter);
+app.use("/api/favorites", favoriteRouter);
+app.use("/api/history", historyRouter);
 
 // Route kiểm tra API
 app.get("/", (req, res) => {
