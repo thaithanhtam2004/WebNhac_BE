@@ -24,6 +24,7 @@ const songRouter = require("./src/web/routers/songRouter");
 const playlistRouter = require("./src/web/routers/playlistRouter");
 const favoriteRouter = require("./src/web/routers/favoriteRouter");
 const historyRouter = require("./src/web/routers/historyRouter");
+const UserTrendProfile = require("./src/web/routers/userTrendProfileRoute")
 
 
 app.use("/api/songs", songRouter);
@@ -51,7 +52,7 @@ app.use("/api/songs", songRouter);
 app.use("/api/playlists", playlistRouter);
 app.use("/api/favorites", favoriteRouter);
 app.use("/api/history", historyRouter);
-
+app.use("/api/trend",UserTrendProfile);
 // Route kiểm tra API
 app.get("/", (req, res) => {
   res.json({
