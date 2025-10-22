@@ -1,6 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const cors = require('cors');
+
+app.use(cors({
+  origin: 'http://localhost:5173', // URL frontend của bạn
+  credentials: true
+}));
 
 // Config môi trường
 const PORT = process.env.PORT || 3000;

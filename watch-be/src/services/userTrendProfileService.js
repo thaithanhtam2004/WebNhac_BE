@@ -1,74 +1,67 @@
-const { ulid } = require("ulid");
-const bcrypt = require("bcrypt");
-const UserRepository = require("../infras/repositories/userRepository");
-const RoleRepository = require("../infras/repositories/roleRepository");
+const UserTrendProfileRepository = require("../infras/repositories/userTrendProfileRepository");
 
-// Hàm validate đơn giản
-const isEmailValid = (email) => /^\S+@\S+\.\S+$/.test(email);
-const isPhoneValid = (phone) => /^\+?\d{7,15}$/.test(phone);
+const UserTrendProfileService = {
+  /**
+   * Tạo hoặc cập nhật profile dựa trên dữ liệu từ request
+   * @param {Object} data - { userId, singerId, emotionLabel, listenCount, likeCount, emotionWeight, likeWeight, singerWeight }
+   */
+  async upsertProfile(data) {
+    const { userId, singerId, emotionLabel, listenCount, likeCount, emotionWeight, likeWeight, singerWeight } = data;
 
-const UserService = {
-  async getAllUsers() {
-    return await UserRepository.findAll();
-  },
+    // Validate dữ liệu
+    if (!userId) throw new Error("Thiếu userId");
+    if (!singerId) throw new Error("Thiếu singerId");
+    if (!emotionLabel) throw new Error("Thiếu emotionLabel");
 
-  async getUserById(userId) {
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
-    return user;
-  },
-
-  async createUser(data, currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin")
-      throw new Error("Chỉ admin mới được tạo người dùng");
-
-    if (!isEmailValid(data.email)) throw new Error("Email không hợp lệ");
-    if (!isPhoneValid(data.phone)) throw new Error("Số điện thoại không hợp lệ");
-
-    // Check role tồn tại
-    const role = await RoleRepository.findById(data.roleId);
-    if (!role) throw new Error("Role không tồn tại");
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    const userId = ulid();
-    await UserRepository.create({
-      ...data,
+    // Chuẩn bị dữ liệu để upsert
+    const profile = {
       userId,
-      password: hashedPassword,
-    });
+      singerId,
+      emotionLabel,
+      listenCount: listenCount || 0,
+      likeCount: likeCount || 0,
+      emotionWeight: emotionWeight || 0.0,
+      likeWeight: likeWeight || 0.0,
+      singerWeight: singerWeight || 0.0
+    };
 
-    return { message: "Tạo người dùng thành công", userId };
+    // Gọi repository
+    const success = await UserTrendProfileRepository.upsertProfile(profile);
+    if (!success) throw new Error("Tạo hoặc cập nhật profile thất bại");
+
+    return {
+      message: "Đã tạo hoặc cập nhật profile thành công",
+      profile
+    };
   },
 
-  async updateUser(userId, data, currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin")
-      throw new Error("Chỉ admin mới được cập nhật người dùng");
+  /**
+   * Cập nhật trọng số cho profile dựa trên dữ liệu từ request
+   * @param {Object} data - { userId, singerId, emotionLabel, emotionWeight, likeWeight, singerWeight }
+   */
+  async updateWeights(data) {
+    const { userId, singerId, emotionLabel, emotionWeight, likeWeight, singerWeight } = data;
 
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
+    if (!userId) throw new Error("Thiếu userId");
+    if (!singerId) throw new Error("Thiếu singerId");
+    if (!emotionLabel) throw new Error("Thiếu emotionLabel");
 
-    if (data.email && !isEmailValid(data.email)) throw new Error("Email không hợp lệ");
-    if (data.phone && !isPhoneValid(data.phone)) throw new Error("Số điện thoại không hợp lệ");
+    // Chỉ cập nhật các trọng số được truyền
+    const weights = {};
+    if (emotionWeight !== undefined) weights.emotionWeight = emotionWeight;
+    if (likeWeight !== undefined) weights.likeWeight = likeWeight;
+    if (singerWeight !== undefined) weights.singerWeight = singerWeight;
 
-    if (data.password) data.password = await bcrypt.hash(data.password, 10);
+    if (Object.keys(weights).length === 0) throw new Error("Cần cung cấp ít nhất một trọng số để cập nhật");
 
-    const success = await UserRepository.update(userId, data);
-    if (!success) throw new Error("Cập nhật thất bại");
+    const success = await UserTrendProfileRepository.updateWeights(userId, singerId, emotionLabel, weights);
+    if (!success) throw new Error("Cập nhật trọng số thất bại");
 
-    return { message: "Cập nhật người dùng thành công" };
-  },
-
-  async deleteUser(userId, currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin")
-      throw new Error("Chỉ admin mới được xóa người dùng");
-
-    const success = await UserRepository.delete(userId);
-    if (!success) throw new Error("Xóa thất bại (người dùng không tồn tại)");
-
-    return { message: "Đã xóa người dùng thành công" };
-  },
+    return {
+      message: "Đã cập nhật trọng số thành công",
+      weights
+    };
+  }
 };
 
-module.exports = UserService;
+module.exports = UserTrendProfileService;
