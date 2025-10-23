@@ -6,6 +6,7 @@ class AlbumController {
       const albums = await AlbumService.getAllAlbums();
       res.status(200).json({ success: true, data: albums });
     } catch (err) {
+      console.error("❌ Lỗi lấy album:", err);
       res.status(500).json({ success: false, message: err.message });
     }
   }
@@ -21,8 +22,12 @@ class AlbumController {
 
   async create(req, res) {
     try {
-      const result = await AlbumService.createAlbum(req.body);
-      res.status(201).json({ success: true, message: result.message });
+      const result = await AlbumService.createAlbum(req.body, req.file);
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        albumId: result.albumId,
+      });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
@@ -30,7 +35,7 @@ class AlbumController {
 
   async update(req, res) {
     try {
-      const result = await AlbumService.updateAlbum(req.params.id, req.body);
+      const result = await AlbumService.updateAlbum(req.params.id, req.body, req.file);
       res.status(200).json({ success: true, message: result.message });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });

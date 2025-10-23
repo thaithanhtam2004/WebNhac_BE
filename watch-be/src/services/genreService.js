@@ -1,51 +1,54 @@
+const { ulid } = require("ulid");
 const GenreRepository = require("../infras/repositories/genreRepository");
 
 const GenreService = {
-  // Lấy danh sách tất cả thể loại
+  // 🟢 Lấy tất cả thể loại
   async getAllGenres() {
-    const genres = await GenreRepository.findAll();
-    return genres;
+    return await GenreRepository.findAll();
   },
 
-  // Lấy thông tin thể loại theo ID
+  // 🟢 Lấy thể loại theo ID
   async getGenreById(genreId) {
     const genre = await GenreRepository.findById(genreId);
     if (!genre) throw new Error("Không tìm thấy thể loại");
     return genre;
   },
 
-  // Tạo thể loại mới
-  async createGenre({ name, description }) {
-    const existing = await GenreRepository.findByName(name);
-    if (existing) throw new Error("Tên thể loại đã tồn tại");
+  // 🟢 Tạo thể loại mới
+  async createGenre(data) {
+    const genreId = ulid();
+    await GenreRepository.create({
+      genreId,
+      name: data.name,
+      description: data.description || null,
+    });
 
-    const newGenre = await GenreRepository.create({ name, description });
-    return {
-      message: "Thêm thể loại thành công",
-      genre: newGenre,
-    };
+    return { message: "Tạo thể loại thành công", genreId };
   },
 
-  // Cập nhật thể loại
+  // 🟢 Cập nhật thể loại
   async updateGenre(genreId, data) {
-    const genre = await GenreRepository.findById(genreId);
-    if (!genre) throw new Error("Không tìm thấy thể loại");
+    const existing = await GenreRepository.findById(genreId);
+    if (!existing) throw new Error("Thể loại không tồn tại");
 
-    const success = await GenreRepository.update(genreId, data);
+    const success = await GenreRepository.update(genreId, {
+      name: data.name,
+      description: data.description || null,
+    });
+
     if (!success) throw new Error("Cập nhật thể loại thất bại");
-
     return { message: "Cập nhật thể loại thành công" };
   },
 
-  // Xóa thể loại
+  // 🟢 Xóa thể loại
   async deleteGenre(genreId) {
-    const genre = await GenreRepository.findById(genreId);
-    if (!genre) throw new Error("Không tìm thấy thể loại");
+    const existing = await GenreRepository.findById(genreId);
+    if (!existing) throw new Error("Thể loại không tồn tại");
 
     const success = await GenreRepository.delete(genreId);
     if (!success) throw new Error("Xóa thể loại thất bại");
 
-    return { message: "Xóa thể loại thành công" };
+    return { message: "Đã xóa thể loại thành công" };
   },
 };
 

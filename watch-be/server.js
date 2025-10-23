@@ -19,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routers
+const albumRoutes = require("./src/web/routers/albumRouter");
+const singerRoutes = require("./src/web/routers/singerRouter");
 const genreRoutes = require("./src/web/routers/genreRoute");
 const songGenreRoutes = require("./src/web/routers/songGenreRouter");
 const featureRoutes = require("./src/web/routers/songFeatureRoute");
@@ -30,6 +32,8 @@ const UserTrendProfile = require("./src/web/routers/userTrendProfileRoute");
 const albumRouter = require("./src/web/routers/albumRouter");
 const userRouter = require("./src/web/routers/userRouter");
 // Dùng routes
+app.use("/api/albums", albumRoutes);
+app.use("/api/singers", singerRoutes);
 app.use("/api/genres", genreRoutes);
 app.use("/api/song-genres", songGenreRoutes);
 app.use("/api/features", featureRoutes);

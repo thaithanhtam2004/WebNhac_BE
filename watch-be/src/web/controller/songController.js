@@ -1,5 +1,6 @@
 const SongService = require("../../services/songService");
 const cloudinary = require("../../utils/config/cloudinary");
+const musicMetadata = require("music-metadata");
 
 class SongController {
   // 🟢 Lấy tất cả bài hát
@@ -30,50 +31,100 @@ class SongController {
   // 🟢 Tạo bài hát mới (upload file & ảnh)
   async create(req, res) {
     try {
-      const { title, duration, lyric, singerId, genreId } = req.body;
+      console.log("📥 Request body:", req.body);
+      console.log("📁 Files:", req.files);
+
+      const { title, lyric, singerId, genreId, releaseDate } = req.body; // ← Thêm releaseDate
+
+      // Validation đầy đủ
+      if (!title?.trim()) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng nhập tên bài hát" 
+        });
+      }
+
+      if (!singerId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng chọn nghệ sĩ" 
+        });
+      }
+
+      if (!genreId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng chọn thể loại" 
+        });
+      }
+
+      // Kiểm tra file nhạc bắt buộc
+      if (!req.files?.file?.[0]) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng upload file nhạc" 
+        });
+      }
 
       let fileUrl = "";
       let coverUrl = "";
+      let duration = 0;
 
-      // 🆙 Upload nhạc (qua buffer)
-      if (req.files?.file?.[0]) {
-        const file = req.files.file[0];
-        const base64 = file.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${file.mimetype};base64,${base64}`,
-          {
-            resource_type: "video",
-            folder: "songs",
-          }
+      // 🎵 Tính duration từ file audio
+      const audioFile = req.files.file[0];
+      try {
+        const metadata = await musicMetadata.parseBuffer(
+          audioFile.buffer,
+          { mimeType: audioFile.mimetype }
         );
-        fileUrl = uploadRes.secure_url;
+        duration = Math.round(metadata.format.duration || 0);
+        console.log(`⏱️ Duration: ${duration}s`);
+      } catch (metaErr) {
+        console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+        // Vẫn tiếp tục, duration = 0
       }
 
-      // 🆙 Upload ảnh bìa (qua buffer)
+      // 🆙 Upload nhạc lên Cloudinary
+      const base64Audio = audioFile.buffer.toString("base64");
+      const uploadRes = await cloudinary.uploader.upload(
+        `data:${audioFile.mimetype};base64,${base64Audio}`,
+        {
+          resource_type: "video",
+          folder: "songs",
+        }
+      );
+      fileUrl = uploadRes.secure_url;
+
+      // 🆙 Upload ảnh bìa (nếu có)
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
-        const base64 = cover.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${cover.mimetype};base64,${base64}`,
+        const base64Cover = cover.buffer.toString("base64");
+        const uploadCoverRes = await cloudinary.uploader.upload(
+          `data:${cover.mimetype};base64,${base64Cover}`,
           {
             resource_type: "image",
             folder: "covers",
           }
         );
-        coverUrl = uploadRes.secure_url;
+        coverUrl = uploadCoverRes.secure_url;
       }
 
       const result = await SongService.createSong({
         title,
         duration,
-        lyric,
+        lyric: lyric || "",
         singerId,
         genreId,
         fileUrl,
         coverUrl,
+        releaseDate: releaseDate || null, // ← Thêm releaseDate
       });
 
-      res.status(201).json({ success: true, message: result.message });
+      res.status(201).json({ 
+        success: true, 
+        message: result.message,
+        songId: result.songId 
+      });
     } catch (err) {
       console.error("❌ Lỗi tạo bài hát:", err);
       res.status(400).json({ success: false, message: err.message });
@@ -83,7 +134,7 @@ class SongController {
   // 🟡 Cập nhật bài hát (có thể thay file/ảnh mới)
   async update(req, res) {
     try {
-      const { title, duration, lyric, singerId, genreId } = req.body;
+      const { title, lyric, singerId, genreId, releaseDate, popularityScore } = req.body; // ← Thêm 2 field
       const songId = req.params.id;
 
       const existing = await SongService.getSongById(songId);
@@ -95,13 +146,27 @@ class SongController {
 
       let fileUrl = existing.fileUrl;
       let coverUrl = existing.coverUrl;
+      let duration = existing.duration;
 
       // 🆙 Upload file mới nếu có
       if (req.files?.file?.[0]) {
-        const file = req.files.file[0];
-        const base64 = file.buffer.toString("base64");
+        const audioFile = req.files.file[0];
+
+        // Tính duration mới
+        try {
+          const metadata = await musicMetadata.parseBuffer(
+            audioFile.buffer,
+            { mimeType: audioFile.mimetype }
+          );
+          duration = Math.round(metadata.format.duration || 0);
+          console.log(`⏱️ Duration mới: ${duration}s`);
+        } catch (metaErr) {
+          console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+        }
+
+        const base64Audio = audioFile.buffer.toString("base64");
         const uploadRes = await cloudinary.uploader.upload(
-          `data:${file.mimetype};base64,${base64}`,
+          `data:${audioFile.mimetype};base64,${base64Audio}`,
           {
             resource_type: "video",
             folder: "songs",
@@ -113,9 +178,9 @@ class SongController {
       // 🆙 Upload ảnh mới nếu có
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
-        const base64 = cover.buffer.toString("base64");
+        const base64Cover = cover.buffer.toString("base64");
         const uploadRes = await cloudinary.uploader.upload(
-          `data:${cover.mimetype};base64,${base64}`,
+          `data:${cover.mimetype};base64,${base64Cover}`,
           {
             resource_type: "image",
             folder: "covers",
@@ -127,11 +192,13 @@ class SongController {
       const result = await SongService.updateSong(songId, {
         title,
         duration,
-        lyric,
+        lyric: lyric || "",
         singerId,
         genreId,
         fileUrl,
         coverUrl,
+        releaseDate: releaseDate !== undefined ? releaseDate : existing.releaseDate, // ← Giữ nguyên nếu không cập nhật
+        popularityScore: popularityScore !== undefined ? popularityScore : existing.popularityScore, // ← Giữ nguyên nếu không cập nhật
       });
 
       res.status(200).json({ success: true, message: result.message });
