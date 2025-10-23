@@ -1,22 +1,30 @@
+// middlewares/upload.js
 const multer = require("multer");
 
 const storage = multer.memoryStorage();
 
 const upload = multer({
-  storage,
+  storage: storage,
   limits: {
-    fileSize: 200 * 1024 * 1024, // Giới hạn 200MB
+    fileSize: 50 * 1024 * 1024, // 50MB
   },
   fileFilter: (req, file, cb) => {
-    // Chỉ cho phép upload audio, video, image
-    if (
-      file.mimetype.startsWith("audio/") ||
-      file.mimetype.startsWith("video/") ||
-      file.mimetype.startsWith("image/")
-    ) {
-      cb(null, true);
+    if (file.fieldname === "file") {
+      // Accept audio files
+      if (file.mimetype.startsWith("audio/")) {
+        cb(null, true);
+      } else {
+        cb(new Error("Chỉ chấp nhận file audio!"), false);
+      }
+    } else if (file.fieldname === "cover") {
+      // Accept image files
+      if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+      } else {
+        cb(new Error("Chỉ chấp nhận file ảnh!"), false);
+      }
     } else {
-      cb(new Error("❌ Chỉ cho phép upload file nhạc hoặc ảnh!"), false);
+      cb(null, true);
     }
   },
 });

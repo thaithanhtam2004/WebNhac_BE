@@ -6,6 +6,7 @@ class AlbumController {
       const albums = await AlbumService.getAllAlbums();
       res.status(200).json({ success: true, data: albums });
     } catch (err) {
+      console.error("❌ Lỗi lấy album:", err);
       res.status(500).json({ success: false, message: err.message });
     }
   }

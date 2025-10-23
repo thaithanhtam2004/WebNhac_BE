@@ -1,19 +1,24 @@
 const pool = require("../db/connection").promise();
 
 const AlbumRepository = {
+  // 🟢 Lấy tất cả album
   async findAll() {
     const sql = `SELECT albumId, name, singerId, coverUrl, description, releaseDate, totalViews, createdAt
     FROM Album ORDER BY createdAt DESC`;
-
     const [rows] = await pool.query(sql);
     return rows;
   },
 
   async findById(albumId) {
-    const sql = `SELECT * FROM Album WHERE albumId = ?`; // đã lấy tất cả cột, nên releaseDate và totalViews sẽ tự có
-
+    const sql = `SELECT * FROM Album WHERE albumId = ?`; // đã lấy tất cả cột, releaseDate và totalViews có sẵn
     const [rows] = await pool.query(sql, [albumId]);
     return rows[0] || null;
+  },
+
+  async findBySingerId(singerId) {
+    const sql = `SELECT * FROM Album WHERE singerId = ? ORDER BY createdAt DESC`;
+    const [rows] = await pool.query(sql, [singerId]);
+    return rows;
   },
 
   async create(album) {
@@ -36,6 +41,7 @@ const AlbumRepository = {
   async update(albumId, data) {
     const fields = [];
     const values = [];
+
     if (data.name !== undefined) {
       fields.push("name = ?");
       values.push(data.name);

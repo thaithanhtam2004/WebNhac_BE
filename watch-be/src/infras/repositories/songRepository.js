@@ -1,6 +1,7 @@
 const pool = require("../db/connection").promise();
 
 const SongRepository = {
+  // 🟢 Lấy tất cả bài hát
   async findAll() {
     const sql = `SELECT songId, title, duration, coverUrl, singerId, genreId, views, popularityScore, releaseDate, createdAt
                  FROM Song ORDER BY createdAt DESC`;
@@ -8,12 +9,14 @@ const SongRepository = {
     return rows;
   },
 
+  // 🟢 Lấy chi tiết 1 bài hát
   async findById(songId) {
     const sql = `SELECT * FROM Song WHERE songId = ?`;
     const [rows] = await pool.query(sql, [songId]);
     return rows[0] || null;
   },
 
+  // 🟢 Tăng lượt xem
   async increaseView(songId) {
     const sql = `UPDATE Song SET views = views + 1 WHERE songId = ?`;
     await pool.query(sql, [songId]);
@@ -23,6 +26,7 @@ const SongRepository = {
     return rows[0]?.views || 0;
   },
 
+  // 🟢 Tạo bài hát mới
   async create(song) {
     const sql = `
       INSERT INTO Song (songId, title, duration, fileUrl, lyric, coverUrl, views, singerId, genreId, releaseDate, popularityScore)
@@ -45,6 +49,7 @@ const SongRepository = {
     return song.songId;
   },
 
+  // 🟢 Cập nhật bài hát
   async update(songId, data) {
     const fields = [];
     const values = [];
@@ -95,8 +100,8 @@ const SongRepository = {
     return result.affectedRows > 0;
   },
 
+  // 🔴 Xóa bài hát
   async delete(songId) {
-    // <-- thêm dấu phẩy trước method này
     const sql = `DELETE FROM Song WHERE songId = ?`;
     const [result] = await pool.query(sql, [songId]);
     return result.affectedRows > 0;

@@ -1,5 +1,6 @@
 const SongService = require("../../services/songService");
 const cloudinary = require("../../utils/config/cloudinary");
+const musicMetadata = require("music-metadata");
 
 class SongController {
   async getAll(req, res) {
@@ -43,6 +44,16 @@ class SongController {
           { resource_type: "video", folder: "songs" }
         );
         fileUrl = uploadRes.secure_url;
+
+        // Tính duration từ file audio
+        try {
+          const metadata = await musicMetadata.parseBuffer(file.buffer, {
+            mimeType: file.mimetype,
+          });
+          duration = Math.round(metadata.format.duration || 0);
+        } catch (metaErr) {
+          console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+        }
       }
 
       if (req.files?.cover?.[0]) {
@@ -58,7 +69,7 @@ class SongController {
       const result = await SongService.createSong({
         title,
         duration,
-        lyric,
+        lyric: lyric || "",
         singerId,
         genreId,
         fileUrl,
@@ -67,13 +78,11 @@ class SongController {
         popularityScore: popularityScore || 0,
       });
 
-      res
-        .status(201)
-        .json({
-          success: true,
-          message: result.message,
-          songId: result.songId,
-        });
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        songId: result.songId,
+      });
     } catch (err) {
       console.error("❌ Lỗi tạo bài hát:", err);
       res.status(400).json({ success: false, message: err.message });
@@ -101,6 +110,7 @@ class SongController {
 
       let fileUrl = existing.fileUrl;
       let coverUrl = existing.coverUrl;
+      let newDuration = duration || existing.duration;
 
       if (req.files?.file?.[0]) {
         const file = req.files.file[0];
@@ -110,6 +120,16 @@ class SongController {
           { resource_type: "video", folder: "songs" }
         );
         fileUrl = uploadRes.secure_url;
+
+        // Tính duration mới
+        try {
+          const metadata = await musicMetadata.parseBuffer(file.buffer, {
+            mimeType: file.mimetype,
+          });
+          newDuration = Math.round(metadata.format.duration || 0);
+        } catch (metaErr) {
+          console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+        }
       }
 
       if (req.files?.cover?.[0]) {
@@ -124,8 +144,8 @@ class SongController {
 
       const result = await SongService.updateSong(songId, {
         title,
-        duration,
-        lyric,
+        duration: newDuration,
+        lyric: lyric || "",
         singerId,
         genreId,
         fileUrl,
