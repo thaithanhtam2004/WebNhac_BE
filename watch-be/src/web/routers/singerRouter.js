@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const SingerController = require("../controller/singerController");
-const authMiddleware = require("../middlewares/authMiddleware");
+// const authMiddleware = require("../middlewares/authMiddleware");
 
-router.use(authMiddleware);
+// router.use(authMiddleware);
 
 // 🟢 Lấy danh sách ca sĩ
 router.get("/", SingerController.getAll);

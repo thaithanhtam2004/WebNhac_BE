@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
-const UserRepository = require("../infras/repositories/userRepository");
-const RoleRepository = require("../infras/repositories/roleRepository");
+const UserRepository = require("../../infras/repositories/userRepository");
+const RoleRepository = require("../../infras/repositories/roleRepository");
 
 const authMiddleware = async (req, res, next) => {
   try {

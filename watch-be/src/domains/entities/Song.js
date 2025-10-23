@@ -9,6 +9,8 @@ export class Song {
     views = 0,
     singerId,
     genreId,
+    releaseDate = null,        
+    popularityScore = 0,       
     createdAt
   }) {
     this.songId = songId;
@@ -20,6 +22,8 @@ export class Song {
     this.views = views;
     this.singerId = singerId;
     this.genreId = genreId;
+    this.releaseDate = releaseDate;           
+    this.popularityScore = popularityScore;   
     this.createdAt = createdAt;
   }
 }

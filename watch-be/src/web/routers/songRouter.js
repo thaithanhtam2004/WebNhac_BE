@@ -1,14 +1,15 @@
+// routes/song.js
 const express = require("express");
 const router = express.Router();
 const SongController = require("../controller/songController");
 const upload = require("../middlewares/upload");
 
-// Thêm maxCount vào
+// ✅ Đúng: middleware upload đặt TRƯỚC controller
 router.post(
   "/",
   upload.fields([
-    { name: "file", maxCount: 1 },    // ← Thêm maxCount
-    { name: "cover", maxCount: 1 }    // ← Thêm maxCount
+    { name: "file", maxCount: 1 },
+    { name: "cover", maxCount: 1 }
   ]),
   SongController.create
 );
