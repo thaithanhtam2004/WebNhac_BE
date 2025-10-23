@@ -1,44 +1,17 @@
 const pool = require("../db/connection").promise();
 
 const SongRepository = {
-  // 🟢 Lấy tất cả bài hát (kèm tên ca sĩ và thể loại)
+  // 🟢 Lấy tất cả bài hát
   async findAll() {
-    const sql = `
-      SELECT 
-        s.songId,
-        s.title,
-        s.duration,
-        s.coverUrl,
-        s.fileUrl,
-        s.views,
-        s.releaseDate,
-        s.popularityScore,
-        s.createdAt,
-        si.singerId,
-        si.name AS singerName,
-        g.genreId,
-        g.name AS genreName
-      FROM Song s
-      LEFT JOIN Singer si ON s.singerId = si.singerId
-      LEFT JOIN Genre g ON s.genreId = g.genreId
-      ORDER BY s.createdAt DESC
-    `;
+    const sql = `SELECT songId, title, duration, coverUrl, singerId, genreId, views, popularityScore, releaseDate, createdAt
+                 FROM Song ORDER BY createdAt DESC`;
     const [rows] = await pool.query(sql);
     return rows;
   },
 
-  // 🟢 Lấy chi tiết 1 bài hát (kèm tên ca sĩ + thể loại)
+  // 🟢 Lấy chi tiết 1 bài hát
   async findById(songId) {
-    const sql = `
-      SELECT 
-        s.*,
-        si.name AS singerName,
-        g.name AS genreName
-      FROM Song s
-      LEFT JOIN Singer si ON s.singerId = si.singerId
-      LEFT JOIN Genre g ON s.genreId = g.genreId
-      WHERE s.songId = ?
-    `;
+    const sql = `SELECT * FROM Song WHERE songId = ?`;
     const [rows] = await pool.query(sql, [songId]);
     return rows[0] || null;
   },
@@ -47,17 +20,16 @@ const SongRepository = {
   async increaseView(songId) {
     const sql = `UPDATE Song SET views = views + 1 WHERE songId = ?`;
     await pool.query(sql, [songId]);
-    const [rows] = await pool.query(`SELECT views FROM Song WHERE songId = ?`, [songId]);
+    const [rows] = await pool.query(`SELECT views FROM Song WHERE songId = ?`, [
+      songId,
+    ]);
     return rows[0]?.views || 0;
   },
 
-  // 🟢 Tạo bài hát mới (thêm releaseDate, popularityScore)
+  // 🟢 Tạo bài hát mới
   async create(song) {
     const sql = `
-      INSERT INTO Song (
-        songId, title, duration, fileUrl, lyric, coverUrl, 
-        views, singerId, genreId, releaseDate, popularityScore
-      )
+      INSERT INTO Song (songId, title, duration, fileUrl, lyric, coverUrl, views, singerId, genreId, releaseDate, popularityScore)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const values = [
@@ -77,26 +49,53 @@ const SongRepository = {
     return song.songId;
   },
 
-  // 🟢 Cập nhật bài hát (thêm releaseDate, popularityScore)
+  // 🟢 Cập nhật bài hát
   async update(songId, data) {
-    const sql = `
-      UPDATE Song
-      SET title = ?, duration = ?, fileUrl = ?, lyric = ?, coverUrl = ?, 
-          singerId = ?, genreId = ?, releaseDate = ?, popularityScore = ?
-      WHERE songId = ?
-    `;
-    const values = [
-      data.title,
-      data.duration,
-      data.fileUrl,
-      data.lyric,
-      data.coverUrl,
-      data.singerId,
-      data.genreId,
-      data.releaseDate || null,
-      data.popularityScore !== undefined ? data.popularityScore : 0,
-      songId,
-    ];
+    const fields = [];
+    const values = [];
+
+    if (data.title !== undefined) {
+      fields.push("title = ?");
+      values.push(data.title);
+    }
+    if (data.duration !== undefined) {
+      fields.push("duration = ?");
+      values.push(data.duration);
+    }
+    if (data.fileUrl !== undefined) {
+      fields.push("fileUrl = ?");
+      values.push(data.fileUrl);
+    }
+    if (data.lyric !== undefined) {
+      fields.push("lyric = ?");
+      values.push(data.lyric);
+    }
+    if (data.coverUrl !== undefined) {
+      fields.push("coverUrl = ?");
+      values.push(data.coverUrl);
+    }
+    if (data.singerId !== undefined) {
+      fields.push("singerId = ?");
+      values.push(data.singerId);
+    }
+    if (data.genreId !== undefined) {
+      fields.push("genreId = ?");
+      values.push(data.genreId);
+    }
+    if (data.releaseDate !== undefined) {
+      fields.push("releaseDate = ?");
+      values.push(data.releaseDate);
+    }
+    if (data.popularityScore !== undefined) {
+      fields.push("popularityScore = ?");
+      values.push(data.popularityScore);
+    }
+
+    if (fields.length === 0) return false;
+
+    const sql = `UPDATE Song SET ${fields.join(", ")} WHERE songId = ?`;
+    values.push(songId);
+
     const [result] = await pool.query(sql, values);
     return result.affectedRows > 0;
   },

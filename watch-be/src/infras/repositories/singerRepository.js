@@ -16,16 +16,26 @@ const SingerRepository = {
   async create(singer) {
     const sql = `INSERT INTO Singer (singerId, name, bio, imageUrl) VALUES (?, ?, ?, ?)`;
     const values = [singer.singerId, singer.name, singer.bio, singer.imageUrl];
-    await pool.query(sql, values);
+
+    //await pool.query(sql, values);
     return singer.singerId;
   },
 
   async update(singerId, data) {
     const fields = [];
     const values = [];
-    if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
-    if (data.bio !== undefined) { fields.push("bio = ?"); values.push(data.bio); }
-    if (data.imageUrl !== undefined) { fields.push("imageUrl = ?"); values.push(data.imageUrl); }
+    if (data.name !== undefined) {
+      fields.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.bio !== undefined) {
+      fields.push("bio = ?");
+      values.push(data.bio);
+    }
+    if (data.imageUrl !== undefined) {
+      fields.push("imageUrl = ?");
+      values.push(data.imageUrl);
+    }
 
     if (fields.length === 0) return false;
 
@@ -40,7 +50,7 @@ const SingerRepository = {
     const sql = `DELETE FROM Singer WHERE singerId = ?`;
     const [result] = await pool.query(sql, [singerId]);
     return result.affectedRows > 0;
-  }
+  },
 };
 
 module.exports = SingerRepository;

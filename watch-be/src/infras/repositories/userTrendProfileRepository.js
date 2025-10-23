@@ -10,7 +10,7 @@ const UserTrendProfileRepository = {
     likeCount = 0,
     emotionWeight = 0.0,
     likeWeight = 0.0,
-    singerWeight = 0.0
+    singerWeight = 0.0,
   }) {
     const sql = `
       INSERT INTO UserTrendProfile 
@@ -32,13 +32,18 @@ const UserTrendProfileRepository = {
       likeCount,
       emotionWeight,
       likeWeight,
-      singerWeight
+      singerWeight,
     ]);
     return result.affectedRows > 0;
   },
 
   // ✏️ Cập nhật trọng số của profile
-  async updateWeights(userId, singerId, emotionLabel, { emotionWeight, likeWeight, singerWeight }) {
+  async updateWeights(
+    userId,
+    singerId,
+    emotionLabel,
+    { emotionWeight, likeWeight, singerWeight }
+  ) {
     const fields = [];
     const values = [];
 
@@ -66,7 +71,7 @@ const UserTrendProfileRepository = {
 
     const [result] = await pool.query(sql, values);
     return result.affectedRows > 0;
-  }
+  },
 };
 
 module.exports = UserTrendProfileRepository;
