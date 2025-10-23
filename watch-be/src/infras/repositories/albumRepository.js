@@ -2,26 +2,33 @@ const pool = require("../db/connection").promise();
 
 const AlbumRepository = {
   async findAll() {
-    const sql = `SELECT albumId, name, singerId, coverUrl, description, createdAt FROM Album ORDER BY createdAt DESC`;
+    const sql = `SELECT albumId, name, singerId, coverUrl, description, releaseDate, totalViews, createdAt
+    FROM Album ORDER BY createdAt DESC`;
+
     const [rows] = await pool.query(sql);
     return rows;
   },
 
   async findById(albumId) {
-    const sql = `SELECT * FROM Album WHERE albumId = ?`;
+    const sql = `SELECT * FROM Album WHERE albumId = ?`; // đã lấy tất cả cột, nên releaseDate và totalViews sẽ tự có
+
     const [rows] = await pool.query(sql, [albumId]);
     return rows[0] || null;
   },
 
   async create(album) {
-    const sql = `INSERT INTO Album (albumId, name, singerId, coverUrl, description) VALUES (?, ?, ?, ?, ?)`;
+    const sql = `INSERT INTO Album (albumId, name, singerId, coverUrl, description, releaseDate, totalViews)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
     const values = [
       album.albumId,
       album.name,
       album.singerId,
       album.coverUrl,
       album.description,
+      album.releaseDate || null,
+      album.totalViews || 0,
     ];
+
     await pool.query(sql, values);
     return album.albumId;
   },
@@ -44,6 +51,14 @@ const AlbumRepository = {
     if (data.description !== undefined) {
       fields.push("description = ?");
       values.push(data.description);
+    }
+    if (data.releaseDate !== undefined) {
+      fields.push("releaseDate = ?");
+      values.push(data.releaseDate);
+    }
+    if (data.totalViews !== undefined) {
+      fields.push("totalViews = ?");
+      values.push(data.totalViews);
     }
 
     if (fields.length === 0) return false;

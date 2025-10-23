@@ -77,6 +77,11 @@ const UserService = {
     delete otpStore[email];
     return "Đặt lại mật khẩu thành công!";
   },
+  async getUserById(userId) {
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error("Không tìm thấy người dùng");
+    return user;
+  },
 };
 
 module.exports = UserService;

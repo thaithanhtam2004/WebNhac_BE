@@ -21,8 +21,18 @@ class AlbumController {
 
   async create(req, res) {
     try {
-      const result = await AlbumService.createAlbum(req.body);
-      res.status(201).json({ success: true, message: result.message });
+      const { name, singerId, coverUrl, description, releaseDate, totalViews } = req.body;
+
+      const result = await AlbumService.createAlbum({
+        name,
+        singerId,
+        coverUrl,
+        description,
+        releaseDate: releaseDate || null,
+        totalViews: totalViews || 0,
+      });
+
+      res.status(201).json({ success: true, message: result.message, albumId: result.albumId });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
@@ -30,7 +40,17 @@ class AlbumController {
 
   async update(req, res) {
     try {
-      const result = await AlbumService.updateAlbum(req.params.id, req.body);
+      const { name, singerId, coverUrl, description, releaseDate, totalViews } = req.body;
+
+      const result = await AlbumService.updateAlbum(req.params.id, {
+        name,
+        singerId,
+        coverUrl,
+        description,
+        releaseDate,
+        totalViews,
+      });
+
       res.status(200).json({ success: true, message: result.message });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });

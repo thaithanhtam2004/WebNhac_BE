@@ -9,7 +9,9 @@ export class Song {
     views = 0,
     singerId,
     genreId,
-    createdAt
+    createdAt,
+    releaseDate = null, // ngày phát hành
+    popularityScore = 0, // điểm phổ biến
   }) {
     this.songId = songId;
     this.title = title;
@@ -21,5 +23,7 @@ export class Song {
     this.singerId = singerId;
     this.genreId = genreId;
     this.createdAt = createdAt;
+    this.releaseDate = releaseDate;
+    this.popularityScore = popularityScore;
   }
 }
