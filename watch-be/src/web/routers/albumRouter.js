@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const AlbumController = require("../controller/albumController");
-// const authMiddleware = require("../middlewares/authMiddleware");
-const upload = require("../middlewares/upload"); // ⚙️ middleware multer
-// Nếu bạn chưa có, tạo file middlewares/upload.js như Song.
+e(authMiddleware);
 
-// router.use(authMiddleware);
+const authMiddleware = require("../middlewares/authMiddleware");
+
+
 
 // 🟢 Lấy danh sách album
 router.get("/", AlbumController.getAll);

@@ -1,13 +1,16 @@
-const mysql = require('mysql2');
-require('dotenv').config(); 
+const mysql = require("mysql2");
+require("dotenv").config();
 const pool = mysql.createPool({
   host: "localhost",
   user: "root",
+
   password: "root",
+
+
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,   // Số connection tối đa trong pool
-  queueLimit: 0
+  connectionLimit: 10, // Số connection tối đa trong pool
+  queueLimit: 0,
 });
 
 // Kiểm tra kết nối với pool

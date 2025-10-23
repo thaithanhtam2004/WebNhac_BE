@@ -1,13 +1,13 @@
 const { ulid } = require("ulid");
 const bcrypt = require("bcrypt");
-const UserRepository = require("../infras/repositories/userRepository");
-const RoleRepository = require("../infras/repositories/roleRepository"); // để lấy role nếu cần
 const jwt = require("jsonwebtoken");
+const UserRepository = require("../infras/repositories/userRepository.js");
+const MailService = require("./mailService.js");
 
 const SALT_ROUNDS = 10;
+const otpStore = {};
 
 const UserService = {
-  // 🟢 Đăng ký
   async register({ name, email, phone, password }) {
     const existing = await UserRepository.findByEmail(email);
     if (existing) throw new Error("Email đã tồn tại");
@@ -27,10 +27,10 @@ const UserService = {
     return { message: "Đăng ký thành công", userId };
   },
 
-  // 🟢 Đăng nhập
   async login({ email, password }) {
     const user = await UserRepository.findByEmail(email);
-    if (!user || !user.isActive) throw new Error("Tài khoản không tồn tại hoặc đã bị vô hiệu hóa");
+    if (!user || !user.isActive)
+      throw new Error("Tài khoản không tồn tại hoặc đã bị vô hiệu hóa");
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new Error("Mật khẩu không đúng");
@@ -44,46 +44,39 @@ const UserService = {
     return token;
   },
 
-  // 🟢 Lấy danh sách tất cả người dùng (admin)
-  async getAllUsers(currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin") throw new Error("Không có quyền");
-    return await UserRepository.findAll();
+  async forgotPassword(email) {
+    const user = await UserRepository.findByEmail(email);
+    if (!user) throw new Error("Email không tồn tại trong hệ thống");
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore[email] = otp;
+
+    await MailService.sendMail(
+      email,
+      "Mã OTP đặt lại mật khẩu",
+      `Xin chào ${user.name},\n\nMã OTP của bạn là: ${otp}\nMã này có hiệu lực trong 5 phút.`,
+      `<p>Xin chào <b>${user.name}</b>,</p><p>Mã OTP của bạn là: <b>${otp}</b></p><p>Mã có hiệu lực trong 5 phút.</p>`
+    );
+
+    setTimeout(() => delete otpStore[email], 5 * 60 * 1000);
+
+    return "Mã OTP đã được gửi qua email.";
   },
 
-  // 🟢 Lấy thông tin theo ID
-  async getUserById(userId) {
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
-    return user;
+  async resetPassword(email, otp, newPassword) {
+    const user = await UserRepository.findByEmail(email);
+    if (!user) throw new Error("Email không tồn tại");
+
+    if (!otpStore[email]) throw new Error("OTP đã hết hạn hoặc không tồn tại");
+    if (otpStore[email] !== otp) throw new Error("Mã OTP không chính xác");
+
+    const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    const success = await UserRepository.updatePassword(user.userId, hashed);
+    if (!success) throw new Error("Đặt lại mật khẩu thất bại");
+
+    delete otpStore[email];
+    return "Đặt lại mật khẩu thành công!";
   },
-
-  // 🟢 Đổi mật khẩu
-  async changePassword(userId, { oldPassword, newPassword }) {
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
-
-    const match = await bcrypt.compare(oldPassword, user.password);
-    if (!match) throw new Error("Mật khẩu cũ không đúng");
-
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    const success = await UserRepository.updatePassword(userId, hashedPassword);
-    if (!success) throw new Error("Đổi mật khẩu thất bại");
-
-    return { message: "Đổi mật khẩu thành công" };
-  },
-
-  // 🟢 Vô hiệu hóa người dùng (admin)
-  async disableUser(userId, currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin") throw new Error("Không có quyền");
-
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
-
-    const success = await UserRepository.disableUser(userId);
-    if (!success) throw new Error("Vô hiệu hóa thất bại");
-
-    return { message: "Người dùng đã bị vô hiệu hóa" };
-  }
 };
 
 module.exports = UserService;

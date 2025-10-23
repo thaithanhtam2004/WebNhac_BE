@@ -48,7 +48,7 @@ const UserRepository = {
     const sql = `UPDATE User SET isActive = FALSE WHERE userId = ?`;
     const [result] = await pool.query(sql, [userId]);
     return result.affectedRows > 0;
-  }
+  },
 };
 
 module.exports = UserRepository;
