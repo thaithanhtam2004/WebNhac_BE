@@ -1,12 +1,14 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const cors = require('cors');
+const cors = require("cors");
 
-app.use(cors({
-  origin: 'http://localhost:5173', // URL frontend của bạn
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 // Config môi trường
 const PORT = process.env.PORT || 3000;
@@ -25,7 +27,8 @@ const playlistRouter = require("./src/web/routers/playlistRouter");
 const favoriteRouter = require("./src/web/routers/favoriteRouter");
 const historyRouter = require("./src/web/routers/historyRouter");
 const UserTrendProfile = require("./src/web/routers/userTrendProfileRoute");
-
+const albumRouter = require("./src/web/routers/albumRouter");
+const userRouter = require("./src/web/routers/userRouter");
 // Dùng routes
 app.use("/api/genres", genreRoutes);
 app.use("/api/song-genres", songGenreRoutes);
@@ -35,7 +38,8 @@ app.use("/api/playlists", playlistRouter);
 app.use("/api/favorites", favoriteRouter);
 app.use("/api/history", historyRouter);
 app.use("/api/trend", UserTrendProfile);
-
+app.use("/api/albums", albumRouter);
+app.use("/api/users", userRouter);
 // Route test
 app.get("/", (req, res) => {
   res.json({ success: true, message: "🚀 API Music Server đang hoạt động!" });

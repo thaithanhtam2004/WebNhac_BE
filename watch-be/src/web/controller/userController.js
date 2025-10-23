@@ -19,6 +19,27 @@ class UserController {
     }
   }
 
+  // 🟢 Gửi OTP quên mật khẩu
+  async forgotPassword(req, res) {
+    try {
+      const result = await UserService.forgotPassword(req.body.email);
+      res.status(200).json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
+
+  // 🟢 Xác thực OTP và reset mật khẩu
+  async resetPassword(req, res) {
+    try {
+      const { email, otp, newPassword } = req.body;
+      const result = await UserService.resetPassword(email, otp, newPassword);
+      res.status(200).json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
+
   async getAll(req, res) {
     try {
       const users = await UserService.getAllUsers(req.user);

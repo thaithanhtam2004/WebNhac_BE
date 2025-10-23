@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const AlbumController = require("../controller/albumController");
-const authMiddleware = require("../middlewares/auth");
+const authMiddleware = require("../middlewares/authMiddleware");
 
-router.use(authMiddleware);
+//router.use(authMiddleware);
 
 // 🟢 Lấy danh sách album
 router.get("/", AlbumController.getAll);

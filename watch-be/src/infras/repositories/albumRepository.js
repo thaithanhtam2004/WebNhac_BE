@@ -15,7 +15,13 @@ const AlbumRepository = {
 
   async create(album) {
     const sql = `INSERT INTO Album (albumId, name, singerId, coverUrl, description) VALUES (?, ?, ?, ?, ?)`;
-    const values = [album.albumId, album.name, album.singerId, album.coverUrl, album.description];
+    const values = [
+      album.albumId,
+      album.name,
+      album.singerId,
+      album.coverUrl,
+      album.description,
+    ];
     await pool.query(sql, values);
     return album.albumId;
   },
@@ -23,10 +29,22 @@ const AlbumRepository = {
   async update(albumId, data) {
     const fields = [];
     const values = [];
-    if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
-    if (data.singerId !== undefined) { fields.push("singerId = ?"); values.push(data.singerId); }
-    if (data.coverUrl !== undefined) { fields.push("coverUrl = ?"); values.push(data.coverUrl); }
-    if (data.description !== undefined) { fields.push("description = ?"); values.push(data.description); }
+    if (data.name !== undefined) {
+      fields.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.singerId !== undefined) {
+      fields.push("singerId = ?");
+      values.push(data.singerId);
+    }
+    if (data.coverUrl !== undefined) {
+      fields.push("coverUrl = ?");
+      values.push(data.coverUrl);
+    }
+    if (data.description !== undefined) {
+      fields.push("description = ?");
+      values.push(data.description);
+    }
 
     if (fields.length === 0) return false;
 
@@ -41,7 +59,7 @@ const AlbumRepository = {
     const sql = `DELETE FROM Album WHERE albumId = ?`;
     const [result] = await pool.query(sql, [albumId]);
     return result.affectedRows > 0;
-  }
+  },
 };
 
 module.exports = AlbumRepository;
