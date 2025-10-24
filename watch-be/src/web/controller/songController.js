@@ -179,6 +179,16 @@ class SongController {
       res.status(400).json({ success: false, message: err.message });
     }
   }
+
+  async getSongByReleaseDate(req, res) {
+    try {
+      const songs = await SongService.getSongByReleaseDate();
+      res.status(200).json({ success: true, data: songs });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
 }
 
 module.exports = new SongController();
