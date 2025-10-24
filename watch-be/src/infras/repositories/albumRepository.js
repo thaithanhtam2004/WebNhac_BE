@@ -1,7 +1,7 @@
 const pool = require("../db/connection").promise();
 
 const AlbumRepository = {
-  // 🟢 Lấy tất cả album (kèm tên ca sĩ)
+  // 🟢 Lấy tất cả album cùng thông tin ca sĩ
   async findAll() {
     const sql = `
       SELECT 
@@ -11,6 +11,7 @@ const AlbumRepository = {
         s.name AS singerName,
         a.coverUrl,
         a.description,
+        a.totalViews,
         a.releaseDate,
         a.createdAt
       FROM Album a
@@ -31,6 +32,7 @@ const AlbumRepository = {
         s.name AS singerName,
         a.coverUrl,
         a.description,
+        a.totalViews,
         a.releaseDate,
         a.createdAt
       FROM Album a
@@ -44,8 +46,7 @@ const AlbumRepository = {
   // 🟢 Lấy danh sách album theo ca sĩ
   async findBySingerId(singerId) {
     const sql = `
-      SELECT 
-        albumId, name, coverUrl, description, releaseDate, createdAt
+      SELECT albumId, name, coverUrl, description, totalViews, releaseDate, createdAt
       FROM Album
       WHERE singerId = ?
       ORDER BY createdAt DESC
@@ -57,8 +58,8 @@ const AlbumRepository = {
   // 🟢 Tạo album mới
   async create(album) {
     const sql = `
-      INSERT INTO Album (albumId, name, singerId, coverUrl, description, releaseDate, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, NOW())
+      INSERT INTO Album (albumId, name, singerId, coverUrl, description, totalViews, releaseDate, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
     `;
     const values = [
       album.albumId,
@@ -66,6 +67,7 @@ const AlbumRepository = {
       album.singerId,
       album.coverUrl || null,
       album.description || null,
+      album.totalViews || 0,
       album.releaseDate || null,
     ];
     await pool.query(sql, values);
@@ -81,6 +83,7 @@ const AlbumRepository = {
     if (data.singerId !== undefined) { fields.push("singerId = ?"); values.push(data.singerId); }
     if (data.coverUrl !== undefined) { fields.push("coverUrl = ?"); values.push(data.coverUrl); }
     if (data.description !== undefined) { fields.push("description = ?"); values.push(data.description); }
+    if (data.totalViews !== undefined) { fields.push("totalViews = ?"); values.push(data.totalViews); }
     if (data.releaseDate !== undefined) { fields.push("releaseDate = ?"); values.push(data.releaseDate); }
 
     if (fields.length === 0) return false;
@@ -94,8 +97,7 @@ const AlbumRepository = {
 
   // 🟢 Xóa album
   async delete(albumId) {
-    const sql = `DELETE FROM Album WHERE albumId = ?`;
-    const [result] = await pool.query(sql, [albumId]);
+    const [result] = await pool.query(`DELETE FROM Album WHERE albumId = ?`, [albumId]);
     return result.affectedRows > 0;
   },
 };
