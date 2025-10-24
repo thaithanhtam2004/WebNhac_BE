@@ -27,5 +27,5 @@ router.get("/", SongController.getAll);
 router.get("/:id", SongController.getById);
 router.delete("/:id", SongController.delete);
 router.post("/:id/view", SongController.increaseView);
-
+router.get("/all/latest", SongController.getSongByReleaseDate);
 module.exports = router;

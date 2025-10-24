@@ -1,5 +1,6 @@
 const { ulid } = require("ulid");
 const SongRepository = require("../infras/repositories/songRepository");
+const SingerRepository = require("../infras/repositories/singerRepository");
 
 const SongService = {
   // 🟢 Lấy tất cả bài hát
@@ -51,6 +52,10 @@ const SongService = {
     if (!success) throw new Error("Xóa thất bại (bài hát không tồn tại)");
     return { message: "Đã xóa bài hát thành công" };
   },
+
+  async getSongByReleaseDate(){
+    return await SongRepository.findByReleaseDateDesc();
+  }
 };
 
 module.exports = SongService;

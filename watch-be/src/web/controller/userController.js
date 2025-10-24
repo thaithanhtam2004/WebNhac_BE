@@ -22,6 +22,7 @@ class UserController {
   }
 
   // 🟢 Lấy tất cả user
+
   async getAll(req, res) {
     try {
       const users = await UserService.getAllUsers();
