@@ -1,72 +1,84 @@
-const pool = require('../db/connection').promise();
+const pool = require("../db/connection").promise();
 
 const GenreRepository = {
-  // Lấy tất cả thể loại
+  // 🟢 Lấy tất cả thể loại
   async findAll() {
     const sql = `
-      SELECT genreId, name, description
-      FROM Genre
-      ORDER BY name ASC
+      SELECT 
+        g.genreId,
+        g.name,
+        g.description
+      FROM Genre g
+      ORDER BY g.name ASC
     `;
     const [rows] = await pool.query(sql);
     return rows;
   },
 
-  // Tìm thể loại theo ID
+  // 🟢 Lấy chi tiết 1 thể loại
   async findById(genreId) {
-    const sql = 'SELECT * FROM Genre WHERE genreId = ?';
+    const sql = `
+      SELECT 
+        g.genreId,
+        g.name,
+        g.description
+      FROM Genre g
+      WHERE g.genreId = ?
+    `;
     const [rows] = await pool.query(sql, [genreId]);
-    return rows.length > 0 ? rows[0] : null;
+    return rows[0] || null;
   },
 
-  // Tìm thể loại theo tên
+  // 🟢 Tìm thể loại theo tên
   async findByName(name) {
-    const sql = 'SELECT * FROM Genre WHERE name = ?';
+    const sql = `
+      SELECT 
+        g.genreId,
+        g.name,
+        g.description
+      FROM Genre g
+      WHERE g.name = ?
+    `;
     const [rows] = await pool.query(sql, [name]);
-    return rows.length > 0 ? rows[0] : null;
+    return rows[0] || null;
   },
 
-  // Thêm thể loại mới
-  async create({ name, description }) {
+  // 🟢 Tạo thể loại mới
+  async create({ genreId, name, description }) {
     try {
       const sql = `
-        INSERT INTO Genre (name, description)
-        VALUES (?, ?)
+        INSERT INTO Genre (genreId, name, description)
+        VALUES (?, ?, ?)
       `;
-      const [result] = await pool.query(sql, [name, description]);
-      return {
-        genreId: result.insertId,
-        name,
-        description
-      };
+      const values = [genreId, name, description || null];
+      await pool.query(sql, values);
+      return { genreId, name, description };
     } catch (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        throw new Error('Tên thể loại đã tồn tại.');
+      if (err.code === "ER_DUP_ENTRY") {
+        throw new Error("Tên thể loại đã tồn tại.");
       }
       throw err;
     }
   },
 
-  // Cập nhật thể loại
+  // 🟢 Cập nhật thể loại
   async update(genreId, data) {
-    const fields = Object.keys(data);
-    const values = Object.values(data);
-
-    if (fields.length === 0) return false;
-
-    const setClause = fields.map(f => `${f} = ?`).join(', ');
-    const sql = `UPDATE Genre SET ${setClause} WHERE genreId = ?`;
-    const [result] = await pool.query(sql, [...values, genreId]);
-
+    const sql = `
+      UPDATE Genre
+      SET name = ?, description = ?
+      WHERE genreId = ?
+    `;
+    const values = [data.name, data.description || null, genreId];
+    const [result] = await pool.query(sql, values);
     return result.affectedRows > 0;
   },
 
-  // Xóa thể loại
+  // 🔴 Xóa thể loại
   async delete(genreId) {
-    const sql = 'DELETE FROM Genre WHERE genreId = ?';
+    const sql = `DELETE FROM Genre WHERE genreId = ?`;
     const [result] = await pool.query(sql, [genreId]);
     return result.affectedRows > 0;
-  }
+  },
 };
 
 module.exports = GenreRepository;

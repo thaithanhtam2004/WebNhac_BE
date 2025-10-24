@@ -21,17 +21,53 @@ class SongController {
     }
   }
 
+
+  // ✅ Hàm helper để chuẩn hóa ngày tháng
+  static normalizeDate(dateString) {
+    if (!dateString) return null;
+    // Đảm bảo format YYYY-MM-DD và thêm thời gian 12:00:00 để tránh timezone issue
+    const date = new Date(dateString + 'T12:00:00');
+    return date.toISOString().split('T')[0];
+  }
+
+  // 🟢 Tạo bài hát mới (upload file & ảnh)
   async create(req, res) {
     try {
-      const {
-        title,
-        duration,
-        lyric,
-        singerId,
-        genreId,
-        releaseDate,
-        popularityScore,
-      } = req.body;
+      console.log("📥 Request body:", req.body);
+      console.log("📁 Files:", req.files);
+
+      const { title, lyric, singerId, genreId, releaseDate } = req.body;
+
+      // Validation đầy đủ
+      if (!title?.trim()) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng nhập tên bài hát" 
+        });
+      }
+
+      if (!singerId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng chọn nghệ sĩ" 
+        });
+      }
+
+      if (!genreId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng chọn thể loại" 
+        });
+      }
+
+      // Kiểm tra file nhạc bắt buộc
+      if (!req.files?.file?.[0]) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Vui lòng upload file nhạc" 
+        });
+      }
+
 
       let fileUrl = "";
       let coverUrl = "";
@@ -43,7 +79,13 @@ class SongController {
           `data:${file.mimetype};base64,${base64}`,
           { resource_type: "video", folder: "songs" }
         );
-        fileUrl = uploadRes.secure_url;
+
+        duration = Math.round(metadata.format.duration || 0);
+        console.log(`⏱️ Duration: ${duration}s`);
+      } catch (metaErr) {
+        console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+      }
+
 
         // Tính duration từ file audio
         try {
@@ -66,6 +108,11 @@ class SongController {
         coverUrl = uploadRes.secure_url;
       }
 
+      // ✅ Chuẩn hóa releaseDate trước khi lưu
+      const normalizedDate = SongController.normalizeDate(releaseDate);
+      console.log("📅 Original date:", releaseDate);
+      console.log("📅 Normalized date:", normalizedDate);
+
       const result = await SongService.createSong({
         title,
         duration,
@@ -74,8 +121,9 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
-        releaseDate: releaseDate || null,
-        popularityScore: popularityScore || 0,
+
+        releaseDate: normalizedDate,
+
       });
 
       res.status(201).json({
@@ -91,15 +139,9 @@ class SongController {
 
   async update(req, res) {
     try {
-      const {
-        title,
-        duration,
-        lyric,
-        singerId,
-        genreId,
-        releaseDate,
-        popularityScore,
-      } = req.body;
+
+      const { title, lyric, singerId, genreId, releaseDate, popularityScore } = req.body;
+
       const songId = req.params.id;
 
       const existing = await SongService.getSongById(songId);
@@ -121,7 +163,6 @@ class SongController {
         );
         fileUrl = uploadRes.secure_url;
 
-        // Tính duration mới
         try {
           const metadata = await musicMetadata.parseBuffer(file.buffer, {
             mimeType: file.mimetype,
@@ -142,6 +183,13 @@ class SongController {
         coverUrl = uploadRes.secure_url;
       }
 
+      // ✅ Chuẩn hóa releaseDate nếu có cập nhật
+      let finalReleaseDate = existing.releaseDate;
+      if (releaseDate !== undefined && releaseDate !== null && releaseDate !== '') {
+        finalReleaseDate = SongController.normalizeDate(releaseDate);
+        console.log("📅 Updated date:", releaseDate, "=>", finalReleaseDate);
+      }
+
       const result = await SongService.updateSong(songId, {
         title,
         duration: newDuration,
@@ -150,8 +198,10 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
-        releaseDate,
-        popularityScore,
+
+        releaseDate: finalReleaseDate,
+        popularityScore: popularityScore !== undefined ? popularityScore : existing.popularityScore,
+
       });
 
       res.status(200).json({ success: true, message: result.message });

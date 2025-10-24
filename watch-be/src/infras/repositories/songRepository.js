@@ -10,6 +10,7 @@ const SongRepository = {
         s.duration,
         s.coverUrl,
         s.fileUrl,
+        s.lyric,
         s.views,
         s.releaseDate,
         s.popularityScore,
@@ -40,7 +41,15 @@ const SongRepository = {
       WHERE s.songId = ?
     `;
     const [rows] = await pool.query(sql, [songId]);
-    return rows[0] || null;
+    const song = rows[0] || null;
+    
+    // 🔍 Debug: Kiểm tra lyric có được trả về không
+    if (song) {
+      console.log("🎵 Song found:", song.songId);
+      console.log("📝 Lyric from DB:", song.lyric ? "Có lời bài hát" : "Không có lời");
+    }
+    
+    return song;
   },
 
   // 🟢 Tăng lượt xem
@@ -51,8 +60,11 @@ const SongRepository = {
     return rows[0]?.views || 0;
   },
 
-  // 🟢 Tạo bài hát mới (thêm releaseDate, popularityScore)
+  // 🟢 Tạo bài hát mới
   async create(song) {
+    console.log("🔍 Repository nhận được song:", song);
+    console.log("📝 Lyric value:", song.lyric);
+    
     const sql = `
       INSERT INTO Song (
         songId, title, duration, fileUrl, lyric, coverUrl, 
@@ -60,12 +72,13 @@ const SongRepository = {
       )
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
+    
     const values = [
       song.songId,
       song.title,
       song.duration,
       song.fileUrl,
-      song.lyric,
+      song.lyric || null,  // ✅ Đảm bảo lyric được truyền vào, null nếu rỗng
       song.coverUrl,
       song.views || 0,
       song.singerId,
@@ -73,23 +86,32 @@ const SongRepository = {
       song.releaseDate || null,
       song.popularityScore || 0,
     ];
-    await pool.query(sql, values);
+    
+    console.log("📤 Values sẽ insert:", values);
+    
+    const [result] = await pool.query(sql, values);
+    console.log("✅ Insert result:", result);
+    
     return song.songId;
   },
 
-  // 🟢 Cập nhật bài hát (thêm releaseDate, popularityScore)
+  // 🟢 Cập nhật bài hát
   async update(songId, data) {
+    console.log("🔍 Repository nhận được data:", data);
+    console.log("📝 Lyric value:", data.lyric);
+    
     const sql = `
       UPDATE Song
       SET title = ?, duration = ?, fileUrl = ?, lyric = ?, coverUrl = ?, 
           singerId = ?, genreId = ?, releaseDate = ?, popularityScore = ?
       WHERE songId = ?
     `;
+    
     const values = [
       data.title,
       data.duration,
       data.fileUrl,
-      data.lyric,
+      data.lyric || null,  // ✅ Đảm bảo lyric được truyền vào
       data.coverUrl,
       data.singerId,
       data.genreId,
@@ -97,7 +119,12 @@ const SongRepository = {
       data.popularityScore !== undefined ? data.popularityScore : 0,
       songId,
     ];
+    
+    console.log("📤 Values sẽ update:", values);
+    
     const [result] = await pool.query(sql, values);
+    console.log("✅ Update result:", result);
+    
     return result.affectedRows > 0;
   },
 

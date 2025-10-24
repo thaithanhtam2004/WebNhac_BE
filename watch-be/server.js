@@ -3,6 +3,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -10,16 +11,21 @@ app.use(
   })
 );
 
-// Config môi trường
+
+// ⚙️ Config môi trường
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST_NAME || "localhost";
 
-// Middleware
+// 📦 Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routers
-// const albumRoutes = require("./src/web/routers/albumRouter");
+
+// 🧭 Import routers
+const userRouter = require("./src/web/routers/userRouter");
+const albumRoutes = require("./src/web/routers/albumRouter");
+const albumSongRouter = require("./src/web/routers/albumSongRoute"); 
+
 const singerRoutes = require("./src/web/routers/singerRouter");
 const genreRoutes = require("./src/web/routers/genreRoute");
 const songGenreRoutes = require("./src/web/routers/songGenreRouter");
@@ -33,8 +39,12 @@ const albumRouter = require("./src/web/routers/albumRouter");
 const userRouter = require("./src/web/routers/userRouter");
 const singerRouter = require("./src/web/routers/singerRouter");
 
-// Dùng routes
-// app.use("/api/albums", albumRoutes);
+
+// 🛠️ Dùng routes
+app.use("/api/users", userRouter);
+app.use("/api/albums", albumRoutes);       // CRUD album
+app.use("/api/albums", albumSongRouter);   // Bài hát trong album
+
 app.use("/api/singers", singerRoutes);
 app.use("/api/genres", genreRoutes);
 app.use("/api/song-genres", songGenreRoutes);
@@ -48,18 +58,18 @@ app.use("/api/trend", UserTrendProfile);
 app.use("/api/users", userRouter);
 app.use("/api/singers", singerRouter);
 
-// Route test
+// 🚀 Route test
 app.get("/", (req, res) => {
   res.json({ success: true, message: "🚀 API Music Server đang hoạt động!" });
 });
 
-// Xử lý lỗi toàn cục
+// ⚠️ Xử lý lỗi toàn cục
 app.use((err, req, res, next) => {
   console.error("Error:", err.stack);
   res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
 });
 
-// Chạy server
+// 🏁 Chạy server
 app.listen(PORT, HOST, () => {
   console.log(`🚀 Server chạy tại: http://${HOST}:${PORT}`);
 });

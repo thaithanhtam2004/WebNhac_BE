@@ -17,6 +17,7 @@ const GenreService = {
   // 🟢 Tạo thể loại mới
   async createGenre(data) {
     const genreId = ulid();
+
     await GenreRepository.create({
       genreId,
       name: data.name,
@@ -26,7 +27,7 @@ const GenreService = {
     return { message: "Tạo thể loại thành công", genreId };
   },
 
-  // 🟢 Cập nhật thể loại
+  // 🟡 Cập nhật thể loại
   async updateGenre(genreId, data) {
     const existing = await GenreRepository.findById(genreId);
     if (!existing) throw new Error("Thể loại không tồn tại");
@@ -40,7 +41,7 @@ const GenreService = {
     return { message: "Cập nhật thể loại thành công" };
   },
 
-  // 🟢 Xóa thể loại
+  // 🔴 Xóa thể loại
   async deleteGenre(genreId) {
     const existing = await GenreRepository.findById(genreId);
     if (!existing) throw new Error("Thể loại không tồn tại");

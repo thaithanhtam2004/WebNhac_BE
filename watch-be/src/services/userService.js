@@ -1,18 +1,35 @@
-const { ulid } = require("ulid");
+// services/userService.js
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const UserRepository = require("../infras/repositories/userRepository.js");
-const MailService = require("./mailService.js");
 
-const SALT_ROUNDS = 10;
-const otpStore = {};
+const { ulid } = require("ulid");
+const UserRepository = require("../infras/repositories/userRepository");
 
 const UserService = {
-  async register({ name, email, phone, password }) {
-    const existing = await UserRepository.findByEmail(email);
-    if (existing) throw new Error("Email đã tồn tại");
+  // 🟢 Lấy tất cả user (Admin only)
+  async getAllUsers() {
+    return await UserRepository.findAll();
+  },
 
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  // 🟢 Lấy user theo ID
+  async getUserById(userId) {
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+    return user;
+  },
+
+  // 🟢 Đăng ký
+  async register(data) {
+    const { name, email, phone, password } = data;
+
+    if (!name || !email || !password) {
+      throw new Error("Vui lòng nhập đầy đủ thông tin");
+    }
+
+    const exists = await UserRepository.existsByEmail(email);
+    if (exists) throw new Error("Email đã được sử dụng");
+
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     const userId = ulid();
 
     await UserRepository.create({
@@ -21,7 +38,7 @@ const UserService = {
       email,
       phone,
       password: hashedPassword,
-      roleId: null,
+      roleId: data.roleId || null,
     });
 
     return { message: "Đăng ký thành công", userId };
@@ -29,58 +46,60 @@ const UserService = {
 
   async login({ email, password }) {
     const user = await UserRepository.findByEmail(email);
-    if (!user || !user.isActive)
-      throw new Error("Tài khoản không tồn tại hoặc đã bị vô hiệu hóa");
+
+    if (!user) throw new Error("Email hoặc mật khẩu không đúng");
+
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new Error("Mật khẩu không đúng");
+    if (!match) throw new Error("Email hoặc mật khẩu không đúng");
 
-    const token = jwt.sign(
-      { userId: user.userId, roleId: user.roleId, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    if (!user.isActive) throw new Error("Tài khoản đã bị vô hiệu hóa");
 
-    return token;
+    const { password: _, ...safeUser } = user;
+    return safeUser;
   },
 
-  async forgotPassword(email) {
-    const user = await UserRepository.findByEmail(email);
-    if (!user) throw new Error("Email không tồn tại trong hệ thống");
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpStore[email] = otp;
+  // 🟡 Cập nhật thông tin user
+  async updateUser(userId, data) {
+    const existing = await UserRepository.findById(userId);
+    if (!existing) throw new Error("Người dùng không tồn tại");
 
-    await MailService.sendMail(
-      email,
-      "Mã OTP đặt lại mật khẩu",
-      `Xin chào ${user.name},\n\nMã OTP của bạn là: ${otp}\nMã này có hiệu lực trong 5 phút.`,
-      `<p>Xin chào <b>${user.name}</b>,</p><p>Mã OTP của bạn là: <b>${otp}</b></p><p>Mã có hiệu lực trong 5 phút.</p>`
-    );
+    const success = await UserRepository.update(userId, data);
+    if (!success) throw new Error("Cập nhật thất bại");
 
-    setTimeout(() => delete otpStore[email], 5 * 60 * 1000);
+    return { message: "Cập nhật người dùng thành công" };
+  },
+
+  // 🟡 Đổi mật khẩu
+  async changePassword(userId, { oldPassword, newPassword }) {
+    const user = await UserRepository.findByEmail(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new Error("Mật khẩu cũ không đúng");
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await UserRepository.updatePassword(userId, hashed);
+
 
     return "Mã OTP đã được gửi qua email.";
   },
 
-  async resetPassword(email, otp, newPassword) {
-    const user = await UserRepository.findByEmail(email);
-    if (!user) throw new Error("Email không tồn tại");
 
-    if (!otpStore[email]) throw new Error("OTP đã hết hạn hoặc không tồn tại");
-    if (otpStore[email] !== otp) throw new Error("Mã OTP không chính xác");
-
-    const hashed = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    const success = await UserRepository.updatePassword(user.userId, hashed);
-    if (!success) throw new Error("Đặt lại mật khẩu thất bại");
-
-    delete otpStore[email];
-    return "Đặt lại mật khẩu thành công!";
+  // 🔴 Vô hiệu hóa user
+  async disableUser(userId) {
+    const success = await UserRepository.disable(userId);
+    if (!success) throw new Error("Không tìm thấy người dùng");
+    return { message: "Đã vô hiệu hóa người dùng" };
   },
-  async getUserById(userId) {
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Không tìm thấy người dùng");
-    return user;
+
+  // 🟢 Kích hoạt lại user
+  async enableUser(userId) {
+    const success = await UserRepository.enable(userId);
+    if (!success) throw new Error("Không tìm thấy người dùng");
+    return { message: "Đã kích hoạt người dùng" };
+
   },
 };
 

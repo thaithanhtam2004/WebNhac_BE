@@ -1,3 +1,4 @@
+// entities/Album.js
 export class Album {
   constructor({
     albumId,
@@ -5,17 +6,21 @@ export class Album {
     singerId,
     coverUrl,
     description,
-    createdAt,
-    releaseDate = null, // ngày phát hành
-    totalViews = 0, // tổng lượt nghe tất cả bài
+
+    totalViews = 0,
+    releaseDate = null,
+    createdAt = new Date(),
+
   }) {
     this.albumId = albumId;
     this.name = name;
     this.singerId = singerId;
     this.coverUrl = coverUrl;
     this.description = description;
-    this.createdAt = createdAt || new Date();
-    this.releaseDate = releaseDate;
+
     this.totalViews = totalViews;
+    this.releaseDate = releaseDate;
+    this.createdAt = createdAt;
+
   }
 }
