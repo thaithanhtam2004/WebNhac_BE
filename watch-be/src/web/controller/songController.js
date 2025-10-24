@@ -3,6 +3,7 @@ const cloudinary = require("../../utils/config/cloudinary");
 const musicMetadata = require("music-metadata");
 
 class SongController {
+  // 🟢 Lấy tất cả bài hát
   async getAll(req, res) {
     try {
       const songs = await SongService.getAllSongs();
@@ -12,15 +13,20 @@ class SongController {
     }
   }
 
+  // 🟢 Lấy bài hát theo ID
   async getById(req, res) {
     try {
       const song = await SongService.getSongById(req.params.id);
+      if (!song) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Không tìm thấy bài hát" });
+      }
       res.status(200).json({ success: true, data: song });
     } catch (err) {
-      res.status(404).json({ success: false, message: err.message });
+      res.status(500).json({ success: false, message: err.message });
     }
   }
-
 
   // ✅ Hàm helper để chuẩn hóa ngày tháng
   static normalizeDate(dateString) {
@@ -68,44 +74,46 @@ class SongController {
         });
       }
 
-
       let fileUrl = "";
       let coverUrl = "";
+      let duration = 0;
 
-      if (req.files?.file?.[0]) {
-        const file = req.files.file[0];
-        const base64 = file.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${file.mimetype};base64,${base64}`,
-          { resource_type: "video", folder: "songs" }
+      // 🎵 Tính duration từ file audio
+      const audioFile = req.files.file[0];
+      try {
+        const metadata = await musicMetadata.parseBuffer(
+          audioFile.buffer,
+          { mimeType: audioFile.mimetype }
         );
-
         duration = Math.round(metadata.format.duration || 0);
         console.log(`⏱️ Duration: ${duration}s`);
       } catch (metaErr) {
         console.error("⚠️ Không thể đọc metadata:", metaErr.message);
       }
 
-
-        // Tính duration từ file audio
-        try {
-          const metadata = await musicMetadata.parseBuffer(file.buffer, {
-            mimeType: file.mimetype,
-          });
-          duration = Math.round(metadata.format.duration || 0);
-        } catch (metaErr) {
-          console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+      // 🆙 Upload nhạc lên Cloudinary
+      const base64Audio = audioFile.buffer.toString("base64");
+      const uploadRes = await cloudinary.uploader.upload(
+        `data:${audioFile.mimetype};base64,${base64Audio}`,
+{
+          resource_type: "video",
+          folder: "songs",
         }
-      }
+      );
+      fileUrl = uploadRes.secure_url;
 
+      // 🆙 Upload ảnh bìa (nếu có)
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
-        const base64 = cover.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${cover.mimetype};base64,${base64}`,
-          { resource_type: "image", folder: "covers" }
+        const base64Cover = cover.buffer.toString("base64");
+        const uploadCoverRes = await cloudinary.uploader.upload(
+          `data:${cover.mimetype};base64,${base64Cover}`,
+          {
+            resource_type: "image",
+            folder: "covers",
+          }
         );
-        coverUrl = uploadRes.secure_url;
+        coverUrl = uploadCoverRes.secure_url;
       }
 
       // ✅ Chuẩn hóa releaseDate trước khi lưu
@@ -121,15 +129,13 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
-
         releaseDate: normalizedDate,
-
       });
 
-      res.status(201).json({
-        success: true,
+      res.status(201).json({ 
+        success: true, 
         message: result.message,
-        songId: result.songId,
+        songId: result.songId 
       });
     } catch (err) {
       console.error("❌ Lỗi tạo bài hát:", err);
@@ -137,48 +143,59 @@ class SongController {
     }
   }
 
+  // 🟡 Cập nhật bài hát (có thể thay file/ảnh mới)
   async update(req, res) {
     try {
-
       const { title, lyric, singerId, genreId, releaseDate, popularityScore } = req.body;
-
       const songId = req.params.id;
 
       const existing = await SongService.getSongById(songId);
-      if (!existing)
+      if (!existing) {
         return res
           .status(404)
           .json({ success: false, message: "Không tìm thấy bài hát" });
+      }
 
       let fileUrl = existing.fileUrl;
       let coverUrl = existing.coverUrl;
-      let newDuration = duration || existing.duration;
+      let duration = existing.duration;
 
+      // 🆙 Upload file mới nếu có
       if (req.files?.file?.[0]) {
-        const file = req.files.file[0];
-        const base64 = file.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${file.mimetype};base64,${base64}`,
-          { resource_type: "video", folder: "songs" }
-        );
-        fileUrl = uploadRes.secure_url;
+        const audioFile = req.files.file[0];
 
         try {
-          const metadata = await musicMetadata.parseBuffer(file.buffer, {
-            mimeType: file.mimetype,
-          });
-          newDuration = Math.round(metadata.format.duration || 0);
+          const metadata = await musicMetadata.parseBuffer(
+            audioFile.buffer,
+            { mimeType: audioFile.mimetype }
+          );
+          duration = Math.round(metadata.format.duration || 0);
+          console.log(`⏱️ Duration mới: ${duration}s`);
         } catch (metaErr) {
           console.error("⚠️ Không thể đọc metadata:", metaErr.message);
         }
+
+        const base64Audio = audioFile.buffer.toString("base64");
+        const uploadRes = await cloudinary.uploader.upload(
+          `data:${audioFile.mimetype};base64,${base64Audio}`,
+          {
+            resource_type: "video",
+            folder: "songs",
+          }
+        );
+        fileUrl = uploadRes.secure_url;
       }
 
+      // 🆙 Upload ảnh mới nếu có
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
-        const base64 = cover.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${cover.mimetype};base64,${base64}`,
-          { resource_type: "image", folder: "covers" }
+        const base64Cover = cover.buffer.toString("base64");
+const uploadRes = await cloudinary.uploader.upload(
+          `data:${cover.mimetype};base64,${base64Cover}`,
+          {
+            resource_type: "image",
+            folder: "covers",
+          }
         );
         coverUrl = uploadRes.secure_url;
       }
@@ -192,16 +209,14 @@ class SongController {
 
       const result = await SongService.updateSong(songId, {
         title,
-        duration: newDuration,
+        duration,
         lyric: lyric || "",
         singerId,
         genreId,
         fileUrl,
         coverUrl,
-
         releaseDate: finalReleaseDate,
         popularityScore: popularityScore !== undefined ? popularityScore : existing.popularityScore,
-
       });
 
       res.status(200).json({ success: true, message: result.message });
@@ -211,6 +226,7 @@ class SongController {
     }
   }
 
+  // 🔴 Xóa bài hát
   async delete(req, res) {
     try {
       const result = await SongService.deleteSong(req.params.id);
@@ -220,6 +236,7 @@ class SongController {
     }
   }
 
+  // 👁 Tăng lượt xem
   async increaseView(req, res) {
     try {
       const songId = req.params.id;
@@ -230,15 +247,26 @@ class SongController {
     }
   }
 
-  async getSongByReleaseDate(req, res) {
-    try {
-      const songs = await SongService.getSongByReleaseDate();
-      res.status(200).json({ success: true, data: songs });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
+
+  // 🆕 Lấy danh sách bài hát mới nhất theo ngày phát hành
+    async getSongByReleaseDate(req, res) {
+        try {
+            // Có thể thêm logic pagination (limit, offset) nếu cần,
+            // nhưng tạm thời chỉ lấy danh sách.
+            const songs = await SongService.getLatestSongs(); 
+            
+            res.status(200).json({ 
+                success: true, 
+                message: "Đã lấy danh sách bài hát mới nhất",
+                data: songs 
+            });
+        } catch (err) {
+            console.error("❌ Lỗi lấy bài hát mới nhất:", err);
+            res.status(500).json({ 
+                success: false, 
+                message: err.message || "Không thể lấy danh sách bài hát mới nhất" 
+            });
+        }
     }
   }
-
-}
-
 module.exports = new SongController();
