@@ -41,10 +41,8 @@ const singerRouter = require("./src/web/routers/singerRouter");
 
 
 // 🛠️ Dùng routes
-app.use("/api/users", userRouter);
-app.use("/api/albums", albumRoutes);       // CRUD album
-app.use("/api/albums", albumSongRouter);   // Bài hát trong album
 
+app.use("/api/albums", albumSongRouter);   // Bài hát trong album
 app.use("/api/singers", singerRoutes);
 app.use("/api/genres", genreRoutes);
 app.use("/api/song-genres", songGenreRoutes);
