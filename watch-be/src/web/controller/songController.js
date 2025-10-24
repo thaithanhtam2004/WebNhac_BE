@@ -28,13 +28,21 @@ class SongController {
     }
   }
 
+  // ✅ Hàm helper để chuẩn hóa ngày tháng
+  static normalizeDate(dateString) {
+    if (!dateString) return null;
+    // Đảm bảo format YYYY-MM-DD và thêm thời gian 12:00:00 để tránh timezone issue
+    const date = new Date(dateString + 'T12:00:00');
+    return date.toISOString().split('T')[0];
+  }
+
   // 🟢 Tạo bài hát mới (upload file & ảnh)
   async create(req, res) {
     try {
       console.log("📥 Request body:", req.body);
       console.log("📁 Files:", req.files);
 
-      const { title, lyric, singerId, genreId, releaseDate } = req.body; // ← Thêm releaseDate
+      const { title, lyric, singerId, genreId, releaseDate } = req.body;
 
       // Validation đầy đủ
       if (!title?.trim()) {
@@ -81,7 +89,6 @@ class SongController {
         console.log(`⏱️ Duration: ${duration}s`);
       } catch (metaErr) {
         console.error("⚠️ Không thể đọc metadata:", metaErr.message);
-        // Vẫn tiếp tục, duration = 0
       }
 
       // 🆙 Upload nhạc lên Cloudinary
@@ -109,6 +116,11 @@ class SongController {
         coverUrl = uploadCoverRes.secure_url;
       }
 
+      // ✅ Chuẩn hóa releaseDate trước khi lưu
+      const normalizedDate = SongController.normalizeDate(releaseDate);
+      console.log("📅 Original date:", releaseDate);
+      console.log("📅 Normalized date:", normalizedDate);
+
       const result = await SongService.createSong({
         title,
         duration,
@@ -117,7 +129,7 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
-        releaseDate: releaseDate || null, // ← Thêm releaseDate
+        releaseDate: normalizedDate,
       });
 
       res.status(201).json({ 
@@ -134,7 +146,7 @@ class SongController {
   // 🟡 Cập nhật bài hát (có thể thay file/ảnh mới)
   async update(req, res) {
     try {
-      const { title, lyric, singerId, genreId, releaseDate, popularityScore } = req.body; // ← Thêm 2 field
+      const { title, lyric, singerId, genreId, releaseDate, popularityScore } = req.body;
       const songId = req.params.id;
 
       const existing = await SongService.getSongById(songId);
@@ -152,7 +164,6 @@ class SongController {
       if (req.files?.file?.[0]) {
         const audioFile = req.files.file[0];
 
-        // Tính duration mới
         try {
           const metadata = await musicMetadata.parseBuffer(
             audioFile.buffer,
@@ -189,6 +200,13 @@ class SongController {
         coverUrl = uploadRes.secure_url;
       }
 
+      // ✅ Chuẩn hóa releaseDate nếu có cập nhật
+      let finalReleaseDate = existing.releaseDate;
+      if (releaseDate !== undefined && releaseDate !== null && releaseDate !== '') {
+        finalReleaseDate = SongController.normalizeDate(releaseDate);
+        console.log("📅 Updated date:", releaseDate, "=>", finalReleaseDate);
+      }
+
       const result = await SongService.updateSong(songId, {
         title,
         duration,
@@ -197,8 +215,8 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
-        releaseDate: releaseDate !== undefined ? releaseDate : existing.releaseDate, // ← Giữ nguyên nếu không cập nhật
-        popularityScore: popularityScore !== undefined ? popularityScore : existing.popularityScore, // ← Giữ nguyên nếu không cập nhật
+        releaseDate: finalReleaseDate,
+        popularityScore: popularityScore !== undefined ? popularityScore : existing.popularityScore,
       });
 
       res.status(200).json({ success: true, message: result.message });

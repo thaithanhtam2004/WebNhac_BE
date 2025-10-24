@@ -1,27 +1,22 @@
 const express = require("express");
 const router = express.Router();
-
 const UserController = require("../controller/userController");
 
-// 🟢 Đăng ký người dùng mới
+// Public routes
 router.post("/register", UserController.register);
-
-// 🟢 Đăng nhập
 router.post("/login", UserController.login);
 
-// 🟢 Lấy danh sách tất cả người dùng
-router.get("/", UserController.getAllUsers);
+// Protected routes (thêm authMiddleware sau)
+router.get("/", UserController.getAll);
+router.get("/:id", UserController.getById);
+router.put("/:id", UserController.update);
+router.put("/:id/change-password", UserController.changePassword);
 
-// 🟢 Lấy thông tin người dùng theo ID
-router.get("/:id", UserController.getUser);
+// ✅ Route này khớp với frontend: PATCH /api/users/:userId/status
+router.patch("/:id/status", UserController.updateStatus);
 
-// 🟢 Cập nhật thông tin người dùng
-router.put("/:id", UserController.updateUser);
-
-// 🟢 Đổi mật khẩu
-router.put("/change-password", UserController.changePassword);
-
-// 🟢 Xóa hoặc vô hiệu hóa người dùng
-router.delete("/:id", UserController.deleteUser);
+// Giữ lại routes riêng lẻ nếu cần
+router.delete("/:id", UserController.disable);
+router.patch("/:id/enable", UserController.enable);
 
 module.exports = router;

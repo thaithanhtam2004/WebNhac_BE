@@ -1,13 +1,16 @@
 const mysql = require('mysql2');
 require('dotenv').config(); 
+
 const pool = mysql.createPool({
   host: "localhost",
   user: "root",
   password: "vantrong159p",
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10,   // Số connection tối đa trong pool
-  queueLimit: 0
+  connectionLimit: 10,
+  queueLimit: 0,
+  timezone: '+07:00',      // ✅ THÊM: Timezone Việt Nam (UTC+7)
+  dateStrings: true        // ✅ THÊM: Trả về date dạng string, không convert
 });
 
 // Kiểm tra kết nối với pool
@@ -17,7 +20,7 @@ pool.getConnection((err, connection) => {
     return;
   }
   console.log("Connected via pool");
-  connection.release(); // Trả connection về pool sau khi dùng
+  connection.release();
 });
 
 module.exports = pool;

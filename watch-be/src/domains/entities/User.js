@@ -1,4 +1,5 @@
-export class User {
+// entities/User.js
+class User {
   constructor({ userId, name, email, phone, password, roleId, isActive = true, createdAt }) {
     this.userId = userId;
     this.name = name;
@@ -9,4 +10,12 @@ export class User {
     this.isActive = isActive;
     this.createdAt = createdAt || new Date();
   }
+
+  // Trả về object không có password
+  toSafeObject() {
+    const { password, ...safeData } = this;
+    return safeData;
+  }
 }
+
+module.exports = User;

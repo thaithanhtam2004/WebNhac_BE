@@ -1,18 +1,33 @@
-const { ulid } = require("ulid");
+// services/userService.js
 const bcrypt = require("bcrypt");
+const { ulid } = require("ulid");
 const UserRepository = require("../infras/repositories/userRepository");
-const RoleRepository = require("../infras/repositories/roleRepository"); // để lấy role nếu cần
-const jwt = require("jsonwebtoken");
-
-const SALT_ROUNDS = 10;
 
 const UserService = {
-  // 🟢 Đăng ký
-  async register({ name, email, phone, password }) {
-    const existing = await UserRepository.findByEmail(email);
-    if (existing) throw new Error("Email đã tồn tại");
+  // 🟢 Lấy tất cả user (Admin only)
+  async getAllUsers() {
+    return await UserRepository.findAll();
+  },
 
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  // 🟢 Lấy user theo ID
+  async getUserById(userId) {
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+    return user;
+  },
+
+  // 🟢 Đăng ký
+  async register(data) {
+    const { name, email, phone, password } = data;
+
+    if (!name || !email || !password) {
+      throw new Error("Vui lòng nhập đầy đủ thông tin");
+    }
+
+    const exists = await UserRepository.existsByEmail(email);
+    if (exists) throw new Error("Email đã được sử dụng");
+
+    const hashedPassword = await bcrypt.hash(password, 10);
     const userId = ulid();
 
     await UserRepository.create({
@@ -21,7 +36,7 @@ const UserService = {
       email,
       phone,
       password: hashedPassword,
-      roleId: null,
+      roleId: data.roleId || null,
     });
 
     return { message: "Đăng ký thành công", userId };
@@ -30,60 +45,55 @@ const UserService = {
   // 🟢 Đăng nhập
   async login({ email, password }) {
     const user = await UserRepository.findByEmail(email);
-    if (!user || !user.isActive) throw new Error("Tài khoản không tồn tại hoặc đã bị vô hiệu hóa");
+    if (!user) throw new Error("Email hoặc mật khẩu không đúng");
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new Error("Mật khẩu không đúng");
+    if (!match) throw new Error("Email hoặc mật khẩu không đúng");
 
-    const token = jwt.sign(
-      { userId: user.userId, roleId: user.roleId, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    if (!user.isActive) throw new Error("Tài khoản đã bị vô hiệu hóa");
 
-    return token;
+    const { password: _, ...safeUser } = user;
+    return safeUser;
   },
 
-  // 🟢 Lấy danh sách tất cả người dùng (admin)
-  async getAllUsers(currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin") throw new Error("Không có quyền");
-    return await UserRepository.findAll();
+  // 🟡 Cập nhật thông tin user
+  async updateUser(userId, data) {
+    const existing = await UserRepository.findById(userId);
+    if (!existing) throw new Error("Người dùng không tồn tại");
+
+    const success = await UserRepository.update(userId, data);
+    if (!success) throw new Error("Cập nhật thất bại");
+
+    return { message: "Cập nhật người dùng thành công" };
   },
 
-  // 🟢 Lấy thông tin theo ID
-  async getUserById(userId) {
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
-    return user;
-  },
-
-  // 🟢 Đổi mật khẩu
+  // 🟡 Đổi mật khẩu
   async changePassword(userId, { oldPassword, newPassword }) {
-    const user = await UserRepository.findById(userId);
+    const user = await UserRepository.findByEmail(userId);
     if (!user) throw new Error("Người dùng không tồn tại");
 
-    const match = await bcrypt.compare(oldPassword, user.password);
-    if (!match) throw new Error("Mật khẩu cũ không đúng");
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new Error("Mật khẩu cũ không đúng");
 
-    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    const success = await UserRepository.updatePassword(userId, hashedPassword);
-    if (!success) throw new Error("Đổi mật khẩu thất bại");
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await UserRepository.updatePassword(userId, hashed);
 
     return { message: "Đổi mật khẩu thành công" };
   },
 
-  // 🟢 Vô hiệu hóa người dùng (admin)
-  async disableUser(userId, currentUser) {
-    if (!currentUser || currentUser.roleName !== "Admin") throw new Error("Không có quyền");
+  // 🔴 Vô hiệu hóa user
+  async disableUser(userId) {
+    const success = await UserRepository.disable(userId);
+    if (!success) throw new Error("Không tìm thấy người dùng");
+    return { message: "Đã vô hiệu hóa người dùng" };
+  },
 
-    const user = await UserRepository.findById(userId);
-    if (!user) throw new Error("Người dùng không tồn tại");
-
-    const success = await UserRepository.disableUser(userId);
-    if (!success) throw new Error("Vô hiệu hóa thất bại");
-
-    return { message: "Người dùng đã bị vô hiệu hóa" };
-  }
+  // 🟢 Kích hoạt lại user
+  async enableUser(userId) {
+    const success = await UserRepository.enable(userId);
+    if (!success) throw new Error("Không tìm thấy người dùng");
+    return { message: "Đã kích hoạt người dùng" };
+  },
 };
 
 module.exports = UserService;

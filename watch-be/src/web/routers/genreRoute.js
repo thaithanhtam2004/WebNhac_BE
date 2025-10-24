@@ -1,6 +1,7 @@
+// routes/genre.js
 const express = require("express");
 const router = express.Router();
-const GenreController = require("../controller/genreController"); // ⚠️ đường dẫn đúng với folder bạn đang dùng
+const GenreController = require("../controller/genreController");
 
 // 🟢 Lấy tất cả thể loại
 router.get("/", GenreController.getAll);
@@ -8,7 +9,7 @@ router.get("/", GenreController.getAll);
 // 🟢 Lấy thể loại theo ID
 router.get("/:id", GenreController.getById);
 
-// 🟢 Tạo mới thể loại
+// 🟢 Tạo thể loại mới
 router.post("/", GenreController.create);
 
 // 🟡 Cập nhật thể loại
