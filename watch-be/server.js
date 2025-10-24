@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // 🧭 Import routers
-const userRouter = require("./src/web/routers/userRouter");
+
 const albumRoutes = require("./src/web/routers/albumRouter");
 const albumSongRouter = require("./src/web/routers/albumSongRoute"); 
 
