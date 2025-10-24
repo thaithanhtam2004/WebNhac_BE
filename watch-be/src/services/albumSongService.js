@@ -26,26 +26,43 @@ const AlbumSongService = {
     return { message: "Đã thêm bài hát vào album" };
   },
 
-  // 🟢 Thêm nhiều bài hát vào album
+
+  // 🟢 Thêm nhiều bài hát vào album (KHÔNG CẦN THAY ĐỔI)
   async addMultipleSongsToAlbum(albumId, songIds) {
+    // 1️⃣ Kiểm tra đầu vào
     if (!Array.isArray(songIds) || songIds.length === 0) {
       throw new Error("Danh sách bài hát không hợp lệ");
     }
 
+    // 2️⃣ Kiểm tra album tồn tại
     const album = await AlbumRepository.findById(albumId);
-    if (!album) throw new Error("Không tìm thấy album");
-
-    // Validate tất cả bài hát tồn tại
-    for (const songId of songIds) {
-      const song = await SongRepository.findById(songId);
-      if (!song) throw new Error(`Bài hát với ID ${songId} không tồn tại`);
+    if (!album) {
+      throw new Error("Không tìm thấy album");
     }
 
-    const success = await AlbumSongRepository.addMultipleSongsToAlbum(albumId, songIds);
-    if (!success) throw new Error("Không thể thêm nhiều bài hát vào album");
+    // 3️⃣ Xác minh từng bài hát có tồn tại
+    for (const songId of songIds) {
+      const song = await SongRepository.findById(songId);
+      if (!song) {
+        throw new Error(`Bài hát với ID ${songId} không tồn tại`);
+      }
+    }
 
-    return { message: "Đã thêm nhiều bài hát vào album", count: songIds.length };
+    // 4️⃣ Gọi repository để thêm bài hát vào album
+    // Repository tự động gán trackNumber (index + 1)
+    const success = await AlbumSongRepository.addMultipleSongsToAlbum(albumId, songIds);
+
+    if (!success) {
+      throw new Error("Không thể thêm nhiều bài hát vào album");
+    }
+
+    // 5️⃣ Trả về kết quả
+    return {
+      message: "Đã thêm nhiều bài hát vào album",
+      count: songIds.length,
+    };
   },
+
 
   // 🟢 Cập nhật danh sách bài hát
   async updateAlbumSongs(albumId, songIds = []) {

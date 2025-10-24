@@ -34,10 +34,6 @@ class AlbumSongController {
       const { albumId } = req.params;
       const { songIds } = req.body;
 
-      console.log("=== ADD MULTIPLE SONGS ===");
-      console.log("Album ID:", albumId);
-      console.log("Song IDs:", songIds);
-
       if (!albumId || !Array.isArray(songIds) || songIds.length === 0) {
         return res.status(400).json({
           success: false,
@@ -47,11 +43,9 @@ class AlbumSongController {
 
       const results = await AlbumSongService.addMultipleSongsToAlbum(albumId, songIds);
 
-      console.log("✅ Add songs success:", results);
-
       res.status(201).json({
         success: true,
-        message: `Đã thêm ${songIds.length} bài hát vào album`,
+        message: "Đã thêm nhiều bài hát vào album",
         data: results,
       });
     } catch (err) {
@@ -95,19 +89,8 @@ class AlbumSongController {
   async getSongsByAlbum(req, res) {
     try {
       const { albumId } = req.params;
-      
-      console.log("=== GET SONGS BY ALBUM ===");
-      console.log("Album ID:", albumId);
-      
       const songs = await AlbumSongService.getSongsByAlbum(albumId);
-      
-      console.log("✅ Songs fetched:", songs.length);
-      console.log("Songs data:", JSON.stringify(songs, null, 2));
-      
-      res.status(200).json({ 
-        success: true, 
-        data: songs 
-      });
+      res.status(200).json({ success: true, data: songs });
     } catch (err) {
       console.error("❌ Lỗi lấy bài hát của album:", err);
       res.status(400).json({
