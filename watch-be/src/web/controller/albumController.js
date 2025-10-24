@@ -43,6 +43,7 @@ class AlbumController {
   // 🟩 Tạo album mới
   async create(req, res) {
     try {
+
       const { name, singerId } = req.body;
 
       if (!name || !singerId) {
@@ -58,7 +59,10 @@ class AlbumController {
         message: "Tạo album thành công",
         albumId: result.albumId,
         data: result.album,
+
       });
+
+      res.status(201).json({ success: true, message: result.message, albumId: result.albumId });
     } catch (err) {
       console.error("❌ Lỗi tạo album:", err);
       res.status(400).json({
@@ -71,6 +75,7 @@ class AlbumController {
   // 🟩 Cập nhật album
   async update(req, res) {
     try {
+
       const { id } = req.params;
       const result = await AlbumService.updateAlbum(id, req.body, req.file);
 
@@ -86,6 +91,7 @@ class AlbumController {
         message: "Cập nhật album thành công",
         data: result,
       });
+
     } catch (err) {
       console.error("❌ Lỗi cập nhật album:", err);
       res.status(400).json({

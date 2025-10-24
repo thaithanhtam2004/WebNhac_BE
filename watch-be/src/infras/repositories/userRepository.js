@@ -116,11 +116,13 @@ const UserRepository = {
     return result.affectedRows > 0;
   },
 
+
   // 🟢 Kích hoạt lại user
   async enable(userId) {
     const [result] = await pool.query(`UPDATE User SET isActive = TRUE WHERE userId = ?`, [userId]);
     return result.affectedRows > 0;
   },
+
 };
 
 module.exports = UserRepository;
