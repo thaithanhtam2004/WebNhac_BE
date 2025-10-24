@@ -1,25 +1,25 @@
-const express = require("express");
-const router = express.Router();
-const AlbumController = require("../controller/albumController");
-e(authMiddleware);
+// const express = require("express");
+// const router = express.Router();
+// const AlbumController = require("../controller/albumController");
 
-const authMiddleware = require("../middlewares/authMiddleware");
-
+// const authMiddleware = require("../middlewares/authMiddleware");
 
 
-// 🟢 Lấy danh sách album
-router.get("/", AlbumController.getAll);
 
-// 🟢 Lấy album theo ID
-router.get("/:id", AlbumController.getById);
+// // 🟢 Lấy danh sách album
+// router.get("/", AlbumController.getAll);
 
-// 🟢 Tạo album (có thể kèm ảnh)
-router.post("/", upload.single("cover"), AlbumController.create);
+// // 🟢 Lấy album theo ID
+// router.get("/:id", AlbumController.getById);
 
-// 🟢 Cập nhật album
-router.put("/:id", upload.single("cover"), AlbumController.update);
+// // 🟢 Tạo album (có thể kèm ảnh)
+// router.post("/", upload.single("cover"), AlbumController.create);
 
-// 🟢 Xóa album
-router.delete("/:id", AlbumController.delete);
+// // 🟢 Cập nhật album
+// router.put("/:id", upload.single("cover"), AlbumController.update);
 
-module.exports = router;
+// // 🟢 Xóa album
+// router.delete("/:id", AlbumController.delete);
+
+// module.exports = router;
+// //
