@@ -95,7 +95,9 @@ class SongController {
       const base64Audio = audioFile.buffer.toString("base64");
       const uploadRes = await cloudinary.uploader.upload(
         `data:${audioFile.mimetype};base64,${base64Audio}`,
-        {
+
+{
+
           resource_type: "video",
           folder: "songs",
         }
@@ -190,7 +192,10 @@ class SongController {
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
         const base64Cover = cover.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
+
+const uploadRes = await cloudinary.uploader.upload(
+
+
           `data:${cover.mimetype};base64,${base64Cover}`,
           {
             resource_type: "image",
@@ -247,16 +252,27 @@ class SongController {
     }
   }
 
-  async getByReleaseDate(req, res) {
-    try {
-      const songs = await SongService.getSongByReleaseDate();
-      res.status(200).json({ success: true, data: songs });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
+
+  // 🆕 Lấy danh sách bài hát mới nhất theo ngày phát hành
+    async getSongByReleaseDate(req, res) {
+        try {
+            // Có thể thêm logic pagination (limit, offset) nếu cần,
+            // nhưng tạm thời chỉ lấy danh sách.
+            const songs = await SongService.getLatestSongs(); 
+            
+            res.status(200).json({ 
+                success: true, 
+                message: "Đã lấy danh sách bài hát mới nhất",
+                data: songs 
+            });
+        } catch (err) {
+            console.error("❌ Lỗi lấy bài hát mới nhất:", err);
+            res.status(500).json({ 
+                success: false, 
+                message: err.message || "Không thể lấy danh sách bài hát mới nhất" 
+            });
+        }
     }
   }
-
-
-}
 
 module.exports = new SongController();
