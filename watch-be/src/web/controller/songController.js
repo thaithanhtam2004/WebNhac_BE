@@ -258,7 +258,7 @@ const uploadRes = await cloudinary.uploader.upload(
         try {
             // Có thể thêm logic pagination (limit, offset) nếu cần,
             // nhưng tạm thời chỉ lấy danh sách.
-            const songs = await SongService.getLatestSongs(); 
+            const songs = await SongService.getSongByReleaseDate(); 
             
             res.status(200).json({ 
                 success: true, 

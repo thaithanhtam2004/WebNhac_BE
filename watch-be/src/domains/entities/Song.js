@@ -9,7 +9,7 @@ export class Song {
     views = 0,
     singerId,
     genreId,
-    createdAt,
+    createdAt = new Date(),
     releaseDate = null, 
     popularityScore = 0, 
   }) {
