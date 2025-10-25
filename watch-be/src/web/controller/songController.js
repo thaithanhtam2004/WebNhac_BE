@@ -95,7 +95,9 @@ class SongController {
       const base64Audio = audioFile.buffer.toString("base64");
       const uploadRes = await cloudinary.uploader.upload(
         `data:${audioFile.mimetype};base64,${base64Audio}`,
+
 {
+
           resource_type: "video",
           folder: "songs",
         }
@@ -190,7 +192,10 @@ class SongController {
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
         const base64Cover = cover.buffer.toString("base64");
+
 const uploadRes = await cloudinary.uploader.upload(
+
+
           `data:${cover.mimetype};base64,${base64Cover}`,
           {
             resource_type: "image",
@@ -269,4 +274,5 @@ const uploadRes = await cloudinary.uploader.upload(
         }
     }
   }
+
 module.exports = new SongController();
