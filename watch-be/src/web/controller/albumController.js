@@ -20,20 +20,33 @@ class AlbumController {
     }
   }
 
+  async getAlbumById(req, res) {
+    try {
+      const album = await AlbumService.getAlbumWithSongs(req.params.albumId);
+      res.status(200).json({ success: true, data: album });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
   async create(req, res) {
     try {
-      const { name, singerId, coverUrl, description, releaseDate, totalViews } = req.body;
+      const { name, singerId } = req.body;
 
-      const result = await AlbumService.createAlbum({
-        name,
-        singerId,
-        coverUrl,
-        description,
-        releaseDate: releaseDate || null,
-        totalViews: totalViews || 0,
+      if (!name || !singerId) {
+        return res.status(400).json({
+          success: false,
+          message: "Thiếu tên album hoặc ID ca sĩ",
+        });
+      }
+
+      const result = await AlbumService.createAlbum(req.body, req.file);
+      res.status(201).json({
+        success: true,
+        message: "Tạo album thành công",
+        albumId: result.albumId,
+        data: result.album,
       });
-
-      res.status(201).json({ success: true, message: result.message, albumId: result.albumId });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
@@ -41,18 +54,21 @@ class AlbumController {
 
   async update(req, res) {
     try {
-      const { name, singerId, coverUrl, description, releaseDate, totalViews } = req.body;
+      const { id } = req.params;
+      const result = await AlbumService.updateAlbum(id, req.body, req.file);
 
-      const result = await AlbumService.updateAlbum(req.params.id, {
-        name,
-        singerId,
-        coverUrl,
-        description,
-        releaseDate,
-        totalViews,
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy album để cập nhật",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Cập nhật album thành công",
+        data: result,
       });
-
-      res.status(200).json({ success: true, message: result.message });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }

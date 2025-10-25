@@ -1,17 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const AlbumController = require("../controller/albumController");
-e(authMiddleware);
-
 const authMiddleware = require("../middlewares/authMiddleware");
-
-
+const upload = require("../middlewares/uploadMiddleware"); // Nếu có middleware upload
 
 // 🟢 Lấy danh sách album
 router.get("/", AlbumController.getAll);
 
-// 🟢 Lấy album theo ID
-router.get("/:id", AlbumController.getById);
+// 🟢 Lấy album theo ID (theo commit "album user")
+router.get("/:albumId", AlbumController.getAlbumById);
 
 // 🟢 Tạo album (có thể kèm ảnh)
 router.post("/", upload.single("cover"), AlbumController.create);

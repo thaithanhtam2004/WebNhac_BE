@@ -21,6 +21,7 @@ class SongController {
     }
   }
 
+<<<<<<< HEAD
   async create(req, res) {
     try {
       const {
@@ -32,10 +33,41 @@ class SongController {
         releaseDate,
         popularityScore,
       } = req.body;
+=======
+  static normalizeDate(dateString) {
+    if (!dateString) return null;
+    const date = new Date(dateString + "T12:00:00");
+    return date.toISOString().split("T")[0];
+  }
+
+  async create(req, res) {
+    try {
+      const { title, lyric, singerId, genreId, releaseDate } = req.body;
+
+      // Validation
+      if (!title?.trim())
+        return res
+          .status(400)
+          .json({ success: false, message: "Vui lòng nhập tên bài hát" });
+      if (!singerId)
+        return res
+          .status(400)
+          .json({ success: false, message: "Vui lòng chọn nghệ sĩ" });
+      if (!genreId)
+        return res
+          .status(400)
+          .json({ success: false, message: "Vui lòng chọn thể loại" });
+      if (!req.files?.file?.[0])
+        return res
+          .status(400)
+          .json({ success: false, message: "Vui lòng upload file nhạc" });
+>>>>>>> 04060ea (album user)
 
       let fileUrl = "";
       let coverUrl = "";
+      let duration = 0;
 
+<<<<<<< HEAD
       if (req.files?.file?.[0]) {
         const file = req.files.file[0];
         const base64 = file.buffer.toString("base64");
@@ -54,18 +86,43 @@ class SongController {
         } catch (metaErr) {
           console.error("⚠️ Không thể đọc metadata:", metaErr.message);
         }
+=======
+      // Upload file nhạc
+      const file = req.files.file[0];
+      const fileBase64 = file.buffer.toString("base64");
+      const uploadFileRes = await cloudinary.uploader.upload(
+        `data:${file.mimetype};base64,${fileBase64}`,
+        { resource_type: "video", folder: "songs" }
+      );
+      fileUrl = uploadFileRes.secure_url;
+
+      // Lấy duration
+      try {
+        const metadata = await musicMetadata.parseBuffer(file.buffer, {
+          mimeType: file.mimetype,
+        });
+        duration = Math.round(metadata.format.duration || 0);
+      } catch (metaErr) {
+        console.warn("⚠️ Không thể đọc metadata:", metaErr.message);
+>>>>>>> 04060ea (album user)
       }
 
+      // Upload cover nếu có
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
-        const base64 = cover.buffer.toString("base64");
-        const uploadRes = await cloudinary.uploader.upload(
-          `data:${cover.mimetype};base64,${base64}`,
+        const coverBase64 = cover.buffer.toString("base64");
+        const uploadCoverRes = await cloudinary.uploader.upload(
+          `data:${cover.mimetype};base64,${coverBase64}`,
           { resource_type: "image", folder: "covers" }
         );
-        coverUrl = uploadRes.secure_url;
+        coverUrl = uploadCoverRes.secure_url;
       }
 
+<<<<<<< HEAD
+=======
+      const normalizedDate = SongController.normalizeDate(releaseDate);
+
+>>>>>>> 04060ea (album user)
       const result = await SongService.createSong({
         title,
         duration,
@@ -74,15 +131,21 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
+<<<<<<< HEAD
         releaseDate: releaseDate || null,
         popularityScore: popularityScore || 0,
+=======
+        releaseDate: normalizedDate,
+>>>>>>> 04060ea (album user)
       });
 
-      res.status(201).json({
-        success: true,
-        message: result.message,
-        songId: result.songId,
-      });
+      res
+        .status(201)
+        .json({
+          success: true,
+          message: result.message,
+          songId: result.songId,
+        });
     } catch (err) {
       console.error("❌ Lỗi tạo bài hát:", err);
       res.status(400).json({ success: false, message: err.message });
@@ -91,6 +154,7 @@ class SongController {
 
   async update(req, res) {
     try {
+<<<<<<< HEAD
       const {
         title,
         duration,
@@ -100,6 +164,10 @@ class SongController {
         releaseDate,
         popularityScore,
       } = req.body;
+=======
+      const { title, lyric, singerId, genreId, releaseDate, popularityScore } =
+        req.body;
+>>>>>>> 04060ea (album user)
       const songId = req.params.id;
 
       const existing = await SongService.getSongById(songId);
@@ -110,13 +178,14 @@ class SongController {
 
       let fileUrl = existing.fileUrl;
       let coverUrl = existing.coverUrl;
-      let newDuration = duration || existing.duration;
+      let newDuration = existing.duration;
 
+      // Update file nhạc nếu có
       if (req.files?.file?.[0]) {
         const file = req.files.file[0];
-        const base64 = file.buffer.toString("base64");
+        const fileBase64 = file.buffer.toString("base64");
         const uploadRes = await cloudinary.uploader.upload(
-          `data:${file.mimetype};base64,${base64}`,
+          `data:${file.mimetype};base64,${fileBase64}`,
           { resource_type: "video", folder: "songs" }
         );
         fileUrl = uploadRes.secure_url;
@@ -128,20 +197,30 @@ class SongController {
           });
           newDuration = Math.round(metadata.format.duration || 0);
         } catch (metaErr) {
-          console.error("⚠️ Không thể đọc metadata:", metaErr.message);
+          console.warn("⚠️ Không thể đọc metadata:", metaErr.message);
         }
       }
 
+      // Update cover nếu có
       if (req.files?.cover?.[0]) {
         const cover = req.files.cover[0];
-        const base64 = cover.buffer.toString("base64");
+        const coverBase64 = cover.buffer.toString("base64");
         const uploadRes = await cloudinary.uploader.upload(
-          `data:${cover.mimetype};base64,${base64}`,
+          `data:${cover.mimetype};base64,${coverBase64}`,
           { resource_type: "image", folder: "covers" }
         );
         coverUrl = uploadRes.secure_url;
       }
 
+<<<<<<< HEAD
+=======
+      // Normalize releaseDate
+      const finalReleaseDate =
+        releaseDate !== undefined && releaseDate !== null && releaseDate !== ""
+          ? SongController.normalizeDate(releaseDate)
+          : existing.releaseDate;
+
+>>>>>>> 04060ea (album user)
       const result = await SongService.updateSong(songId, {
         title,
         duration: newDuration,
@@ -150,8 +229,13 @@ class SongController {
         genreId,
         fileUrl,
         coverUrl,
+<<<<<<< HEAD
         releaseDate,
         popularityScore,
+=======
+        releaseDate: finalReleaseDate,
+        popularityScore: popularityScore ?? existing.popularityScore,
+>>>>>>> 04060ea (album user)
       });
 
       res.status(200).json({ success: true, message: result.message });
@@ -172,13 +256,24 @@ class SongController {
 
   async increaseView(req, res) {
     try {
-      const songId = req.params.id;
-      const result = await SongService.increaseView(songId);
+      const result = await SongService.increaseView(req.params.id);
       res.status(200).json({ success: true, message: result.message });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
   }
+<<<<<<< HEAD
+=======
+
+  async getSongByReleaseDate(req, res) {
+    try {
+      const songs = await SongService.getSongByReleaseDate();
+      res.status(200).json({ success: true, data: songs });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+>>>>>>> 04060ea (album user)
 }
 
 module.exports = new SongController();
