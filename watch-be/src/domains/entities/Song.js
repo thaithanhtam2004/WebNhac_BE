@@ -10,8 +10,8 @@ export class Song {
     singerId,
     genreId,
     createdAt,
-    releaseDate = null, // ngày phát hành
-    popularityScore = 0, // điểm phổ biến
+    releaseDate = null, 
+    popularityScore = 0, 
   }) {
     this.songId = songId;
     this.title = title;

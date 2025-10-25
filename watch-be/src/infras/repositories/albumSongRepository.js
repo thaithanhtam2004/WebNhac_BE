@@ -37,7 +37,7 @@ const AlbumSongRepository = {
     return result.affectedRows > 0;
   },
 
-  // 🆕 Thêm nhiều bài hát vào album
+  // 🆕 Thêm nhiều bài hát vào album (Sửa đổi)
   async addMultipleSongsToAlbum(albumId, songIds) {
     const connection = await pool.getConnection();
     try {
@@ -50,7 +50,9 @@ const AlbumSongRepository = {
       `;
 
       for (let i = 0; i < songIds.length; i++) {
-        await connection.query(insertSql, [albumId, songIds[i], null]);
+        // 🧩 Sửa: Tính toán trackNumber
+        const trackNumber = i + 1; // Gán trackNumber bằng index + 1
+        await connection.query(insertSql, [albumId, songIds[i], trackNumber]);
       }
 
       await connection.commit();
@@ -63,6 +65,7 @@ const AlbumSongRepository = {
       connection.release();
     }
   },
+
 
   // 🟢 Xóa bài hát khỏi album
   async removeSongFromAlbum(albumId, songId) {
