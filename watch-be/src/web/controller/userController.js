@@ -5,7 +5,13 @@ class UserController {
   async register(req, res) {
     try {
       const result = await UserService.register(req.body);
-      res.status(201).json({ success: true, message: result.message, userId: result.userId });
+      res
+        .status(201)
+        .json({
+          success: true,
+          message: result.message,
+          userId: result.userId,
+        });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
@@ -15,7 +21,9 @@ class UserController {
   async login(req, res) {
     try {
       const result = await UserService.login(req.body);
-      res.status(200).json({ success: true, message: "Đăng nhập thành công", data: result });
+      res
+        .status(200)
+        .json({ success: true, message: "Đăng nhập thành công", data: result });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
@@ -89,9 +97,9 @@ class UserController {
       const userId = req.params.id;
 
       if (isActive === undefined || isActive === null) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "isActive là bắt buộc" 
+        return res.status(400).json({
+          success: false,
+          message: "isActive là bắt buộc",
         });
       }
 
@@ -101,9 +109,9 @@ class UserController {
       } else if (isActive === true) {
         result = await UserService.enableUser(userId);
       } else {
-        return res.status(400).json({ 
-          success: false, 
-          message: "isActive phải là true hoặc false" 
+        return res.status(400).json({
+          success: false,
+          message: "isActive phải là true hoặc false",
         });
       }
 
