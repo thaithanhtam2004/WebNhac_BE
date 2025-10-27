@@ -158,9 +158,160 @@ async findByReleaseDateDesc() {
   
   const [rows] = await pool.query(sql);
   return rows; // trả trực tiếp
+},
+
+    async searchSongs(query) {
+  if (!query || query.trim() === '') {
+    return [];
+  }
+
+  const searchTerm = `%${query}%`;
+  
+  const sql = `
+    SELECT 
+      s.songId,
+      s.title,
+      s.duration,
+      s.coverUrl,
+      s.fileUrl,
+      s.views,
+      s.releaseDate,
+      s.popularityScore,
+      si.singerId,
+      si.name AS singerName,
+      g.genreId,
+      g.name AS genreName
+    FROM Song s
+    LEFT JOIN Singer si ON s.singerId = si.singerId
+    LEFT JOIN Genre g ON s.genreId = g.genreId
+    WHERE 
+      s.title LIKE ? OR
+      si.name LIKE ? OR
+      g.name LIKE ?
+    ORDER BY s.releaseDate DESC
+  `;
+  
+  const [rows] = await pool.query(sql, [searchTerm, searchTerm, searchTerm]);
+  return rows;
+},
+
+async searchAll(query) {
+  if (!query || query.trim() === '') {
+    return { songs: [], singers: [], genres: [] };
+  }
+
+  const searchTerm = `%${query}%`;
+  
+  try {
+    // 🎵 Tìm bài hát
+    const songSql = `
+      SELECT 
+        s.songId,
+        s.title,
+        s.duration,
+        s.coverUrl,
+        s.fileUrl,
+        s.views,
+        s.releaseDate,
+        si.singerId,
+        si.name AS singerName,
+        g.genreId,
+        g.name AS genreName
+      FROM Song s
+      LEFT JOIN Singer si ON s.singerId = si.singerId
+      LEFT JOIN Genre g ON s.genreId = g.genreId
+      WHERE s.title LIKE ?
+      ORDER BY s.views DESC
+      LIMIT 10
+    `;
+    
+    // 👤 Tìm nghệ sĩ - ✅ Đổi avatar → imageUrl
+    const singerSql = `
+      SELECT 
+        singerId,
+        name,
+        bio,
+        imageUrl
+      FROM Singer
+      WHERE name LIKE ?
+      LIMIT 5
+    `;
+    
+    // 🎸 Tìm thể loại
+    const genreSql = `
+      SELECT 
+        genreId,
+        name,
+        description
+      FROM Genre
+      WHERE name LIKE ?
+      LIMIT 5
+    `;
+
+    const [songs] = await pool.query(songSql, [searchTerm]);
+    const [singers] = await pool.query(singerSql, [searchTerm]);
+    const [genres] = await pool.query(genreSql, [searchTerm]);
+
+    return { songs, singers, genres };
+  } catch (error) {
+    console.error('❌ SearchAll Repository Error:', error);
+    throw error;
+  }
+},
+
+// 🎵 Lấy tất cả bài hát của 1 nghệ sĩ
+async findBySingerId(singerId) {
+  const sql = `
+    SELECT 
+      s.songId,
+      s.title,
+      s.duration,
+      s.coverUrl,
+      s.fileUrl,
+      s.views,
+      s.releaseDate,
+      si.singerId,
+      si.name AS singerName,
+      g.genreId,
+      g.name AS genreName
+    FROM Song s
+    LEFT JOIN Singer si ON s.singerId = si.singerId
+    LEFT JOIN Genre g ON s.genreId = g.genreId
+    WHERE s.singerId = ?
+    ORDER BY s.views DESC
+  `;
+  const [rows] = await pool.query(sql, [singerId]);
+  return rows;
+},
+
+// 🎸 Lấy tất cả bài hát của 1 thể loại
+async findByGenreId(genreId) {
+  const sql = `
+    SELECT 
+      s.songId,
+      s.title,
+      s.duration,
+      s.coverUrl,
+      s.fileUrl,
+      s.views,
+      s.releaseDate,
+      si.singerId,
+      si.name AS singerName,
+      g.genreId,
+      g.name AS genreName
+    FROM Song s
+    LEFT JOIN Singer si ON s.singerId = si.singerId
+    LEFT JOIN Genre g ON s.genreId = g.genreId
+    WHERE s.genreId = ?
+    ORDER BY s.views DESC
+  `;
+  const [rows] = await pool.query(sql, [genreId]);
+  return rows;
 }
 
 };
+
+  
 
 
 

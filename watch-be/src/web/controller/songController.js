@@ -273,6 +273,67 @@ const uploadRes = await cloudinary.uploader.upload(
             });
         }
     }
+
+    async searchSongs(req, res, next) {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập từ khóa tìm kiếm',
+        data: [],
+        total: 0
+      });
+    }
+
+    // ✅ Sửa: viết hoa SongService
+    const result = await SongService.searchSongs(q);
+    
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
+}
+
+  // Tìm kiếm tổng hợp
+async searchAll(req, res, next) {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập từ khóa tìm kiếm'
+      });
+    }
+
+    const result = await SongService.searchAll(q);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Lấy bài hát theo nghệ sĩ
+async getBySinger(req, res) {
+  try {
+    const songs = await SongService.getSongsBySinger(req.params.singerId);
+    res.status(200).json({ success: true, data: songs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// Lấy bài hát theo thể loại
+async getByGenre(req, res) {
+  try {
+    const songs = await SongService.getSongsByGenre(req.params.genreId);
+    res.status(200).json({ success: true, data: songs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+}
 
 module.exports = new SongController();
