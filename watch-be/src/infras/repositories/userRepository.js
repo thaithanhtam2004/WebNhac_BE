@@ -1,108 +1,128 @@
-// const pool = require('../db/connection').promise();
-// const bcrypt = require('bcrypt');
+// repositories/userRepository.js
+const pool = require("../db/connection").promise();
+
+const UserRepository = {
+  // 🟢 Lấy tất cả người dùng (kèm tên vai trò)
+  async findAll() {
+    const sql = `
+      SELECT 
+        u.userId,
+        u.name,
+        u.email,
+        u.phone,
+        u.roleId,
+        u.isActive,
+        u.createdAt,
+        r.roleName
+      FROM User u
+      LEFT JOIN Role r ON u.roleId = r.roleId
+      ORDER BY u.createdAt DESC
+    `;
+    const [rows] = await pool.query(sql);
+    return rows;
+  },
+
+  // 🟢 Tìm user theo ID (không gồm password)
+  async findById(userId) {
+    const sql = `
+      SELECT 
+        u.userId,
+        u.name,
+        u.email,
+        u.phone,
+        u.roleId,
+        u.isActive,
+        u.createdAt,
+        r.roleName
+      FROM User u
+      LEFT JOIN Role r ON u.roleId = r.roleId
+      WHERE u.userId = ?
+    `;
+    const [rows] = await pool.query(sql, [userId]);
+    return rows[0] || null;
+  },
+
+  // 🟢 Tìm user theo email (bao gồm password)
+  async findByEmail(email) {
+    const sql = `
+      SELECT u.*, r.roleName
+      FROM User u
+      LEFT JOIN Role r ON u.roleId = r.roleId
+      WHERE u.email = ?
+    `;
+    const [rows] = await pool.query(sql, [email]);
+    return rows[0] || null;
+  },
+
+  // 🟢 Kiểm tra email tồn tại
+  async existsByEmail(email) {
+    const [rows] = await pool.query(`SELECT COUNT(*) AS count FROM User WHERE email = ?`, [email]);
+    return rows[0].count > 0;
+  },
+
+  // 🟢 Tạo user mới
+  async create(user) {
+    const sql = `
+      INSERT INTO User (userId, name, email, phone, password, roleId)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+    const values = [
+      user.userId,
+      user.name,
+      user.email,
+      user.phone,
+      user.password,
+      user.roleId || null,
+    ];
+    await pool.query(sql, values);
+    return user.userId;
+  },
+
+  // 🟡 Cập nhật mật khẩu
+  async updatePassword(userId, hashedPassword) {
+    const [result] = await pool.query(`UPDATE User SET password = ? WHERE userId = ?`, [hashedPassword, userId]);
+    return result.affectedRows > 0;
+  },
+
+  // 🟡 Cập nhật thông tin user (không bao gồm password)
+  async update(userId, data) {
+    const fields = [];
+    const values = [];
+
+    if (data.name !== undefined) {
+      fields.push("name = ?");
+      values.push(data.name);
+    }
+    if (data.phone !== undefined) {
+      fields.push("phone = ?");
+      values.push(data.phone);
+    }
+    if (data.roleId !== undefined) {
+      fields.push("roleId = ?");
+      values.push(data.roleId);
+    }
+
+    if (fields.length === 0) return false;
+
+    values.push(userId);
+    const sql = `UPDATE User SET ${fields.join(", ")} WHERE userId = ?`;
+    const [result] = await pool.query(sql, values);
+    return result.affectedRows > 0;
+  },
+
+  // 🔴 Vô hiệu hóa user
+  async disable(userId) {
+    const [result] = await pool.query(`UPDATE User SET isActive = FALSE WHERE userId = ?`, [userId]);
+    return result.affectedRows > 0;
+  },
 
 
-// const UserRepository = {
-//   // 🔍 Tìm người dùng theo email
-//   async findByEmail(email) {
-//     const sql = 'SELECT * FROM User WHERE email = ?';
-//     const [rows] = await pool.query(sql, [email]);
-//     return rows.length > 0 ? rows[0] : null;
-//   },
+  // 🟢 Kích hoạt lại user
+  async enable(userId) {
+    const [result] = await pool.query(`UPDATE User SET isActive = TRUE WHERE userId = ?`, [userId]);
+    return result.affectedRows > 0;
+  },
 
-//   // 🔍 Lấy người dùng + mật khẩu (cho đăng nhập)
-//   async findUserWithPassword(email) {
-//     const sql = `
-//       SELECT userId, password, roleId, name
-//       FROM User
-//       WHERE email = ? AND isActive = TRUE
-//     `;
-//     const [rows] = await pool.query(sql, [email]);
-//     return rows.length > 0 ? rows[0] : null;
-//   },
+};
 
-//   // 📋 Lấy tất cả người dùng
-//   async findAll() {
-//     const sql = `
-//       SELECT userId, name, email, phone, roleId, isActive, createdAt
-//       FROM User
-//       ORDER BY name
-//     `;
-//     const [rows] = await pool.query(sql);
-//     return rows;
-//   },
-
-//   // ➕ Tạo tài khoản người dùng
-//   async create({ name, email, phone, password, roleId = 2 }) {
-//     const passwordHash = await bcrypt.hash(password, 10);
-
-//     const sql = `
-//       INSERT INTO User (name, email, phone, password, roleId)
-//       VALUES (?, ?, ?, ?, ?)
-//     `;
-
-//     const [result] = await pool.query(sql, [
-//       name,
-//       email,
-//       phone,
-//       passwordHash,
-//       roleId
-//     ]);
-
-//     return {
-//       userId: result.insertId,
-//       name,
-//       email,
-//       phone,
-//       roleId
-//     };
-//   },
-
-
-//   // 🔍 Lấy người dùng theo ID
-//   async findById(userId) {
-//     const sql = 'SELECT * FROM User WHERE userId = ?';
-//     const [rows] = await pool.query(sql, [userId]);
-//     return rows.length > 0 ? rows[0] : null;
-//   },
-
-//   // ✏️ Cập nhật thông tin người dùng
-//   async update(userId, data) {
-//     const fields = Object.keys(data);
-//     const values = Object.values(data);
-
-
-//     if (fields.length === 0) return false;
-
-//     const setClause = fields.map(field => `${field} = ?`).join(', ');
-//     const sql = `UPDATE User SET ${setClause} WHERE userId = ?`;
-
-//     const [result] = await pool.query(sql, [...values, userId]);
-//     return result.affectedRows > 0;
-//   },
-
-
-//   // 🔑 Đổi mật khẩu
-//   async changePassword(userId, newPassword) {
-//     const hash = await bcrypt.hash(newPassword, 10);
-//     const sql = 'UPDATE User SET password = ? WHERE userId = ?';
-//     const [result] = await pool.query(sql, [hash, userId]);
-//     return result.affectedRows > 0;
-//   },
-
-//   // ❌ Xóa (hoặc vô hiệu hóa) người dùng
-//   async delete(userId, { softDelete = true } = {}) {
-//     if (softDelete) {
-//       const sql = 'UPDATE User SET isActive = FALSE WHERE userId = ?';
-//       const [result] = await pool.query(sql, [userId]);
-//       return result.affectedRows > 0;
-//     } else {
-//       const sql = 'DELETE FROM User WHERE userId = ?';
-//       const [result] = await pool.query(sql, [userId]);
-//       return result.affectedRows > 0;
-//     }
-//   }
-// };
-
-
-// module.exports = UserRepository;
+module.exports = UserRepository;

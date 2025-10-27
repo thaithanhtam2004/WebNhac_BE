@@ -1,21 +1,21 @@
+// routes/genre.js
 const express = require("express");
 const router = express.Router();
-
 const GenreController = require("../controller/genreController");
 
-// Thêm thể loại mới
-router.post("/", GenreController.createGenre);
+// 🟢 Lấy tất cả thể loại
+router.get("/", GenreController.getAll);
 
-// Lấy danh sách tất cả thể loại
-router.get("/", GenreController.getAllGenres);
+// 🟢 Lấy thể loại theo ID
+router.get("/:id", GenreController.getById);
 
-// Lấy thông tin thể loại theo ID
-router.get("/:id", GenreController.getGenreById);
+// 🟢 Tạo thể loại mới
+router.post("/", GenreController.create);
 
-// Cập nhật thể loại
-router.put("/:id", GenreController.updateGenre);
+// 🟡 Cập nhật thể loại
+router.put("/:id", GenreController.update);
 
-// Xóa thể loại
-router.delete("/:id", GenreController.deleteGenre);
+// 🔴 Xóa thể loại
+router.delete("/:id", GenreController.delete);
 
 module.exports = router;

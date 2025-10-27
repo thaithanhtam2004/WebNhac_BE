@@ -1,89 +1,106 @@
-// const UserRepository = require("../infras/repositories/userRepository");
-// const bcrypt = require("bcrypt");
-// // const authService = require("../utils/jwt");
+// services/userService.js
+const bcrypt = require("bcrypt");
 
-// const UserService = {
-//   // 🟢 Đăng ký tài khoản mới
-//   async register({ name, email, phone, password, role_id }) {
-//     const existing = await UserRepository.findByEmail(email);
-//     if (existing) throw new Error("Email đã tồn tại");
+const { ulid } = require("ulid");
+const UserRepository = require("../infras/repositories/userRepository");
 
-//     await UserRepository.create({
-//       name,
-//       email,
-//       phone,
-//       password,
-//       role_id,
-//     });
+const UserService = {
+  // 🟢 Lấy tất cả user (Admin only)
+  async getAllUsers() {
+    return await UserRepository.findAll();
+  },
 
-//     return { message: "Đăng ký thành công" };
-//   },
+  // 🟢 Lấy user theo ID
+  async getUserById(userId) {
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+    return user;
+  },
 
-//   // 🟢 Đăng nhập
-//   async login({ email, password }) {
-//     const user = await UserRepository.findUserWithPassword(email);
-//     if (!user) throw new Error("Không tìm thấy email");
+  // 🟢 Đăng ký
+  async register(data) {
+    const { name, email, phone, password } = data;
 
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) throw new Error("Sai mật khẩu");
+    if (!name || !email || !password) {
+      throw new Error("Vui lòng nhập đầy đủ thông tin");
+    }
 
-//     return {
-//       message: "Đăng nhập thành công",
-//       user: {
-//         user_id: user.user_id,
-//         name: user.name,
-//         role_id: user.role_id,
-//         email: user.email,
-//       },
-//       token: authService.taoToken({
-//         id: user.user_id,
-//         role_id: user.role_id,
-//         name: user.name,
-//         email: user.email,
-//       }),
-//     };
-//   },
+    const exists = await UserRepository.existsByEmail(email);
+    if (exists) throw new Error("Email đã được sử dụng");
 
-//   // 🟢 Lấy thông tin người dùng theo ID
-//   async getUserById(id) {
-//     const user = await UserRepository.findById(id);
-//     if (!user) throw new Error("Không tìm thấy người dùng");
-//     return user;
-//   },
 
-//   // 🟢 Cập nhật thông tin người dùng
-//   async updateUser(id, newData) {
-//     const success = await UserRepository.update(id, newData);
-//     if (!success) throw new Error("Cập nhật thất bại");
-//     return { message: "Cập nhật thành công" };
-//   },
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = ulid();
 
-//   // 🟢 Đổi mật khẩu
-//   async changePassword(user_id, oldPassword, newPassword) {
-//     const user = await UserRepository.findUserWithPasswordById(user_id);
-//     if (!user) throw new Error("Không tìm thấy tài khoản");
+    await UserRepository.create({
+      userId,
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      roleId: data.roleId || null,
+    });
 
-//     const match = await bcrypt.compare(oldPassword, user.password);
-//     if (!match) throw new Error("Mật khẩu cũ không đúng");
+    return { message: "Đăng ký thành công", userId };
+  },
 
-//     const success = await UserRepository.changePassword(user_id, newPassword);
-//     if (!success) throw new Error("Đổi mật khẩu thất bại");
+  async login({ email, password }) {
+    const user = await UserRepository.findByEmail(email);
 
-//     return { message: "Đổi mật khẩu thành công" };
-//   },
+    if (!user) throw new Error("Email hoặc mật khẩu không đúng");
 
-//   // 🟢 Xóa hoặc vô hiệu hóa tài khoản
-//   async deleteUser(user_id) {
-//     const success = await UserRepository.delete(user_id, { softDelete: true });
-//     if (!success) throw new Error("Xóa thất bại");
-//     return { message: "Xóa thành công" };
-//   },
 
-//   // 🟢 Lấy tất cả người dùng
-//   async getAllUsers() {
-//     const list = await UserRepository.findAll();
-//     return list;
-//   },
-// };
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) throw new Error("Email hoặc mật khẩu không đúng");
 
-// module.exports = UserService;
+    if (!user.isActive) throw new Error("Tài khoản đã bị vô hiệu hóa");
+
+    const { password: _, ...safeUser } = user;
+    return safeUser;
+  },
+
+
+  // 🟡 Cập nhật thông tin user
+  async updateUser(userId, data) {
+    const existing = await UserRepository.findById(userId);
+    if (!existing) throw new Error("Người dùng không tồn tại");
+
+    const success = await UserRepository.update(userId, data);
+    if (!success) throw new Error("Cập nhật thất bại");
+
+    return { message: "Cập nhật người dùng thành công" };
+  },
+
+  // 🟡 Đổi mật khẩu
+  async changePassword(userId, { oldPassword, newPassword }) {
+    const user = await UserRepository.findByEmail(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new Error("Mật khẩu cũ không đúng");
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await UserRepository.updatePassword(userId, hashed);
+
+
+    return "Mã OTP đã được gửi qua email.";
+  },
+
+
+  // 🔴 Vô hiệu hóa user
+  async disableUser(userId) {
+    const success = await UserRepository.disable(userId);
+    if (!success) throw new Error("Không tìm thấy người dùng");
+    return { message: "Đã vô hiệu hóa người dùng" };
+  },
+
+  // 🟢 Kích hoạt lại user
+  async enableUser(userId) {
+    const success = await UserRepository.enable(userId);
+    if (!success) throw new Error("Không tìm thấy người dùng");
+    return { message: "Đã kích hoạt người dùng" };
+
+  },
+};
+
+module.exports = UserService;

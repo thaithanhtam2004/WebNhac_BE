@@ -1,23 +1,31 @@
+// routes/song.js
 const express = require("express");
 const router = express.Router();
 const SongController = require("../controller/songController");
+const upload = require("../middlewares/upload");
 
-// 🟢 Lấy danh sách bài hát
+// ✅ Đúng: middleware upload đặt TRƯỚC controller
+router.post(
+  "/",
+  upload.fields([
+    { name: "file", maxCount: 1 },
+    { name: "cover", maxCount: 1 }
+  ]),
+  SongController.create
+);
+
+router.put(
+  "/:id",
+  upload.fields([
+    { name: "file", maxCount: 1 },
+    { name: "cover", maxCount: 1 }
+  ]),
+  SongController.update
+);
+
 router.get("/", SongController.getAll);
-
-// 🟢 Lấy bài hát theo ID
 router.get("/:id", SongController.getById);
-
-// 🟢 Tạo bài hát mới
-router.post("/", SongController.create);
-
-// 🟢 Cập nhật bài hát
-router.put("/:id", SongController.update);
-
-// 🟢 Xóa bài hát
 router.delete("/:id", SongController.delete);
-
-// 🟢 Cập nhật lượt nghe (views)
-router.patch("/:id/views", SongController.updateViews);
-
+router.post("/:id/view", SongController.increaseView);
+router.get("/all/latest", SongController.getSongByReleaseDate);
 module.exports = router;
