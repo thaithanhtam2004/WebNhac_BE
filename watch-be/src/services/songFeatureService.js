@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const { runPythonScript } = require("../utils/pythonRunner");
 const SongFeatureRepository = require("../infras/repositories/songFeatureRepository");
-
+const SongRepository = require("../infras/repositories/songRepository");
 const SongFeatureService = {
   async analyzeAndSave(songId, filePath, emotionId = null) {
     // Validate
@@ -33,6 +33,10 @@ const SongFeatureService = {
       message: "Phân tích và lưu đặc trưng bài hát thành công",
       feature: newFeature,
     };
+  },
+
+    async getAllSongsWithFeature() {
+    return await SongRepository.findAllWithFeature();
   },
 
   async getFeatureBySong(songId) {

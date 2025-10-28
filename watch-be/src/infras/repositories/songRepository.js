@@ -158,7 +158,36 @@ async findByReleaseDateDesc() {
   
   const [rows] = await pool.query(sql);
   return rows; // trả trực tiếp
-}
+},
+
+async findAllWithFeature() {
+  const sql = `
+    SELECT 
+      s.songId,
+      s.title,
+      s.duration,
+      s.coverUrl,
+      s.fileUrl,
+      s.lyric,
+      s.views,
+      s.releaseDate,
+      s.popularityScore,
+      s.createdAt,
+      si.singerId,
+      si.name AS singerName,
+      g.genreId,
+      g.name AS genreName,
+      CASE WHEN sf.songId IS NOT NULL THEN 1 ELSE 0 END AS hasFeature
+    FROM Song s
+    LEFT JOIN Singer si ON s.singerId = si.singerId
+    LEFT JOIN Genre g ON s.genreId = g.genreId
+    LEFT JOIN SongFeature sf ON s.songId = sf.songId
+    ORDER BY s.createdAt DESC
+  `;
+  const [rows] = await pool.query(sql);
+  return rows;
+},
+
 
 };
 

@@ -1,26 +1,55 @@
+const fs = require("fs");
+const path = require("path");
 const SongFeatureService = require("../../services/songFeatureService");
 
 const SongFeatureController = {
+  // 🧠 Phân tích cảm xúc bài hát
   async analyze(req, res) {
     console.log("✅ Đã nhận request POST /api/features/analyze");
-    console.log("Body nhận được:", req.body);
-    try {
-      const { songId, filePath, emotionId } = req.body;
-      if (!songId || !filePath)
-        return res.status(400).json({ error: "Thiếu songId hoặc filePath" });
 
+    try {
+      const { songId, emotionId } = req.body;
+      const file = req.file; // lấy file từ multer
+
+      // ✅ Kiểm tra đầu vào
+      if (!songId) return res.status(400).json({ error: "Thiếu songId" });
+      if (!file) return res.status(400).json({ error: "Thiếu file nhạc" });
+
+      // 🟢 Tạo thư mục lưu file tạm
+      const uploadDir = path.join(__dirname, "../../uploads/audio");
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+      // 🟢 Lưu file vào ổ cứng tạm thời
+      const filePath = path.join(uploadDir, file.originalname);
+      fs.writeFileSync(filePath, file.buffer);
+
+      console.log("📂 Đã lưu file tạm tại:", filePath);
+
+      // 🧠 Gọi service xử lý phân tích
       const result = await SongFeatureService.analyzeAndSave(songId, filePath, emotionId);
-      res.json(result);
+
+      // 🧹 (Tùy chọn) Xóa file sau khi xử lý xong để tránh rác
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("⚠️ Không thể xóa file tạm:", err.message);
+      });
+
+      return res.json({
+        success: true,
+        message: "Phân tích cảm xúc bài hát thành công!",
+        data: result,
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      console.error("❌ Lỗi trong analyze:", error);
+      return res.status(500).json({ error: error.message });
     }
   },
 
+  // 🧠 Lấy đặc trưng bài hát
   async getBySongId(req, res) {
     try {
       const { songId } = req.params;
       const feature = await SongFeatureService.getFeatureBySong(songId);
-      res.json(feature);
+      res.json({ success: true, data: feature });
     } catch (error) {
       res.status(404).json({ error: error.message });
     }
