@@ -2,14 +2,14 @@ const SongFeatureService = require("../../services/songFeatureService");
 
 const SongFeatureController = {
   async analyze(req, res) {
-     console.log("✅ Đã nhận request POST /api/features/analyze");
-  console.log("Body nhận được:", req.body);
+    console.log("✅ Đã nhận request POST /api/features/analyze");
+    console.log("Body nhận được:", req.body);
     try {
-      const { songId, filePath } = req.body;
+      const { songId, filePath, emotionId } = req.body;
       if (!songId || !filePath)
         return res.status(400).json({ error: "Thiếu songId hoặc filePath" });
 
-      const result = await SongFeatureService.analyzeAndSave(songId, filePath);
+      const result = await SongFeatureService.analyzeAndSave(songId, filePath, emotionId);
       res.json(result);
     } catch (error) {
       res.status(500).json({ error: error.message });

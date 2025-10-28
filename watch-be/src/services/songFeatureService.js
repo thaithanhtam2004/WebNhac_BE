@@ -4,13 +4,13 @@ const { runPythonScript } = require("../utils/pythonRunner");
 const SongFeatureRepository = require("../infras/repositories/songFeatureRepository");
 
 const SongFeatureService = {
-  async analyzeAndSave(songId, filePath) {
+  async analyzeAndSave(songId, filePath, emotionId = null) {
     // Validate
     if (!songId || !filePath) throw new Error("Thiếu songId hoặc filePath");
     if (!fs.existsSync(filePath)) throw new Error("File audio không tồn tại");
 
     // Đường dẫn tuyệt đối đến Python script
-    const scriptPath = path.join(__dirname, "../extractAudioFeature.py");
+    const scriptPath = path.join(__dirname, "../python/feature.py");
     if (!fs.existsSync(scriptPath)) throw new Error("File Python script không tồn tại");
 
     let features;
@@ -22,8 +22,12 @@ const SongFeatureService = {
       throw new Error("Không thể trích xuất đặc trưng âm thanh");
     }
 
-    // Lưu vào DB
-    const newFeature = await SongFeatureRepository.create(songId, features);
+    // Lưu vào DB (gọi theo object mới)
+    const newFeature = await SongFeatureRepository.create({
+      songId,
+      features,
+      emotionId
+    });
 
     return {
       message: "Phân tích và lưu đặc trưng bài hát thành công",
