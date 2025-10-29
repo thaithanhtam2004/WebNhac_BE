@@ -1,5 +1,5 @@
 // src/infras/repositories/historyRepository.js
-const pool = require('../db/connection').promise();
+const pool = require("../db/connection").promise();
 
 const HistoryRepository = {
   // ➕ Lưu lịch sử nghe nhạc
@@ -37,7 +37,7 @@ const HistoryRepository = {
   async removeSong(userId, songId) {
     const sql = `DELETE FROM History WHERE userId = ? AND songId = ?`;
     await pool.query(sql, [userId, songId]);
-  }
+  },
 };
 
 module.exports = HistoryRepository;
