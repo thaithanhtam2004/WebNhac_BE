@@ -274,6 +274,28 @@ class SongController {
         message: err.message || "Không thể lấy danh sách bài hát mới nhất",
       });
     }
+
+// 🆕 Lấy tất cả bài hát kèm trạng thái đã phân tích
+async getAllWithFeature(req, res) {
+  try {
+    const songs = await SongService.getAllSongsWithFeature(); // service đúng
+    res.status(200).json({ 
+      success: true, 
+      message: "Đã lấy danh sách bài hát kèm trạng thái phân tích", 
+      data: songs 
+    });
+  } catch (err) {
+    console.error("❌ Lỗi lấy danh sách bài hát với feature:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: err.message || "Không thể lấy danh sách bài hát" 
+    });
+  }
+}
+
+
+
+
   }
 }
 

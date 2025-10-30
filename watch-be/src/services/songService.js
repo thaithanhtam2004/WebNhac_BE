@@ -55,7 +55,13 @@ const SongService = {
 
   async getSongByReleaseDate(){
     return await SongRepository.findByReleaseDateDesc();
-  }
+  },
+  async getAllSongsWithFeature() {
+    const songs = await SongRepository.findAllWithFeature();
+    return songs;
+  },
+
+
 };
 
 module.exports = SongService;
