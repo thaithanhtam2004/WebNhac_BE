@@ -256,24 +256,89 @@ class SongController {
   }
 
   // 🆕 Lấy danh sách bài hát mới nhất theo ngày phát hành
-  async getSongByReleaseDate(req, res) {
-    try {
-      // Có thể thêm logic pagination (limit, offset) nếu cần,
-      // nhưng tạm thời chỉ lấy danh sách.
-      const songs = await SongService.getSongByReleaseDate();
 
-      res.status(200).json({
-        success: true,
-        message: "Đã lấy danh sách bài hát mới nhất",
-        data: songs,
-      });
-    } catch (err) {
-      console.error("❌ Lỗi lấy bài hát mới nhất:", err);
-      res.status(500).json({
+    async getSongByReleaseDate(req, res) {
+        try {
+            // Có thể thêm logic pagination (limit, offset) nếu cần,
+            // nhưng tạm thời chỉ lấy danh sách.
+            const songs = await SongService.getSongByReleaseDate(); 
+            
+            res.status(200).json({ 
+                success: true, 
+                message: "Đã lấy danh sách bài hát mới nhất",
+                data: songs 
+            });
+        } catch (err) {
+            console.error("❌ Lỗi lấy bài hát mới nhất:", err);
+            res.status(500).json({ 
+                success: false, 
+                message: err.message || "Không thể lấy danh sách bài hát mới nhất" 
+            });
+        }
+    }
+
+    async searchSongs(req, res, next) {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
         success: false,
-        message: err.message || "Không thể lấy danh sách bài hát mới nhất",
+        message: 'Vui lòng nhập từ khóa tìm kiếm',
+        data: [],
+        total: 0
       });
     }
+
+    // ✅ Sửa: viết hoa SongService
+    const result = await SongService.searchSongs(q);
+    
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+  // Tìm kiếm tổng hợp
+async searchAll(req, res, next) {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập từ khóa tìm kiếm'
+      });
+    }
+
+    const result = await SongService.searchAll(q);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Lấy bài hát theo nghệ sĩ
+async getBySinger(req, res) {
+  try {
+    const songs = await SongService.getSongsBySinger(req.params.singerId);
+    res.status(200).json({ success: true, data: songs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// Lấy bài hát theo thể loại
+async getByGenre(req, res) {
+  try {
+    const songs = await SongService.getSongsByGenre(req.params.genreId);
+    res.status(200).json({ success: true, data: songs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+}
+
 
 // 🆕 Lấy tất cả bài hát kèm trạng thái đã phân tích
 async getAllWithFeature(req, res) {
@@ -298,5 +363,6 @@ async getAllWithFeature(req, res) {
 
   }
 }
+
 
 module.exports = new SongController();

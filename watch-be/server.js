@@ -36,8 +36,9 @@ const recommendation= require("./src/web/routers/userRecommendationRoute")
 const emotion= require("./src/web/routers/emotionRoutes")
 // 🛠️ Dùng routes
 app.use("/api/users", userRouter);
-app.use("/api/albums", albumRoutes); // CRUD album
-app.use("/api/albums", albumSongRouter); // Bài hát trong album
+
+app.use("/api/albums", albumRoutes);       // CRUD album
+app.use("/api/albums", albumSongRouter);   // Bài hát trong album
 
 app.use("/api/singers", singerRoutes);
 app.use("/api/genres", genreRoutes);
