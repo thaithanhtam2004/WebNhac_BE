@@ -1,15 +1,16 @@
 const PlaylistService = require('../../services/playlistService');
 
 class PlaylistController {
-  async getByUser(req, res) {
-    try {
-      const { userId } = req.query;
-      const playlists = await PlaylistService.getPlaylistsByUser(userId);
-      res.status(200).json({ success: true, data: playlists });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
-    }
+async getByUser(req, res) {
+  try {
+    const { id } = req.params; // lấy từ params
+    const playlists = await PlaylistService.getPlaylistsByUser(id);
+    res.status(200).json({ success: true, data: playlists });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
+}
+
 
   async getAll(req, res) {
     try {

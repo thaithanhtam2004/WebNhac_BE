@@ -115,7 +115,7 @@ async getSongsBySinger(singerId) {
 
 async getSongsByGenre(genreId) {
   return await SongRepository.findByGenreId(genreId);
-}
+},
 
   async getAllSongsWithFeature() {
     const songs = await SongRepository.findAllWithFeature();

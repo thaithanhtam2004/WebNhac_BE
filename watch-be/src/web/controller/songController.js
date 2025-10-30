@@ -337,7 +337,6 @@ async getByGenre(req, res) {
     res.status(500).json({ success: false, message: err.message });
   }
 }
-}
 
 
 // 🆕 Lấy tất cả bài hát kèm trạng thái đã phân tích
@@ -358,11 +357,15 @@ async getAllWithFeature(req, res) {
   }
 }
 
-
-
-
-  }
 }
+
+
+
+
+
+
+
+
 
 
 module.exports = new SongController();
