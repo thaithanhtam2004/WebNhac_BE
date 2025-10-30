@@ -126,7 +126,7 @@ const SongRepository = {
   // 🟢 Tìm kiếm tất cả (bài hát + ca sĩ + thể loại)
   async searchAll(query) {
     if (!query || query.trim() === '') return { songs: [], singers: [], genres: [] };
-    const searchTerm = `%${query}%`;
+    const searchTerm = `${query}%`;
 
     const songSql = `
       SELECT 
