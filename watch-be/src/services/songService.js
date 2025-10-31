@@ -55,7 +55,75 @@ const SongService = {
 
   async getSongByReleaseDate(){
     return await SongRepository.findByReleaseDateDesc();
+  },
+
+
+  async searchSongs(query) {
+  try {
+    if (!query || query.trim() === '') {
+      return {
+        success: false,
+        data: [],
+        total: 0,
+        message: 'Vui lòng nhập từ khóa tìm kiếm'
+      };
+    }
+
+    // ✅ Sửa: viết hoa SongRepository
+    const songs = await SongRepository.searchSongs(query.trim());
+    
+    return {
+      success: true,
+      data: songs,
+      total: songs.length,
+      message: songs.length > 0 
+        ? `Tìm thấy ${songs.length} kết quả` 
+        : 'Không tìm thấy kết quả nào'
+    };
+  } catch (error) {
+    console.error('Search songs error:', error);
+    throw new Error(`Tìm kiếm bài hát thất bại: ${error.message}`);
   }
+}, 
+
+  async searchAll(query) {
+  try {
+    if (!query || query.trim() === '') {
+      return {
+        success: false,
+        data: { songs: [], singers: [], genres: [] },
+        message: 'Vui lòng nhập từ khóa tìm kiếm'
+      };
+    }
+
+    const results = await SongRepository.searchAll(query.trim());
+    
+    return {
+      success: true,
+      data: results,
+      message: 'Tìm kiếm thành công'
+    };
+  } catch (error) {
+    console.error('Search all error:', error);
+    throw new Error(`Tìm kiếm thất bại: ${error.message}`);
+  }
+},
+
+async getSongsBySinger(singerId) {
+  return await SongRepository.findBySingerId(singerId);
+},
+
+async getSongsByGenre(genreId) {
+  return await SongRepository.findByGenreId(genreId);
+},
+
+  async getAllSongsWithFeature() {
+    const songs = await SongRepository.findAllWithFeature();
+    return songs;
+  },
+
+
 };
+
 
 module.exports = SongService;

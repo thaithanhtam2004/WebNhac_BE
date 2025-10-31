@@ -13,6 +13,7 @@ class FavoriteController {
 
   async addFavorite(req, res) {
     try {
+       console.log("BODY:", req.body);
       const { userId, songId } = req.body;
       if (!userId || !songId) throw new Error("Thiếu userId hoặc songId");
       const result = await FavoriteService.addFavorite(userId, songId);

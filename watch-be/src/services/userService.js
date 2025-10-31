@@ -28,7 +28,6 @@ const UserService = {
     const exists = await UserRepository.existsByEmail(email);
     if (exists) throw new Error("Email đã được sử dụng");
 
-
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = ulid();
 
@@ -49,7 +48,6 @@ const UserService = {
 
     if (!user) throw new Error("Email hoặc mật khẩu không đúng");
 
-
     const match = await bcrypt.compare(password, user.password);
     if (!match) throw new Error("Email hoặc mật khẩu không đúng");
 
@@ -58,7 +56,6 @@ const UserService = {
     const { password: _, ...safeUser } = user;
     return safeUser;
   },
-
 
   // 🟡 Cập nhật thông tin user
   async updateUser(userId, data) {
@@ -82,10 +79,8 @@ const UserService = {
     const hashed = await bcrypt.hash(newPassword, 10);
     await UserRepository.updatePassword(userId, hashed);
 
-
     return "Mã OTP đã được gửi qua email.";
   },
-
 
   // 🔴 Vô hiệu hóa user
   async disableUser(userId) {
@@ -99,7 +94,6 @@ const UserService = {
     const success = await UserRepository.enable(userId);
     if (!success) throw new Error("Không tìm thấy người dùng");
     return { message: "Đã kích hoạt người dùng" };
-
   },
 };
 

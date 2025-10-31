@@ -1,3 +1,4 @@
+const jwt = require("jsonwebtoken");
 const UserService = require("../../services/userService");
 
 class UserController {
@@ -5,24 +6,39 @@ class UserController {
   async register(req, res) {
     try {
       const result = await UserService.register(req.body);
-      res.status(201).json({ success: true, message: result.message, userId: result.userId });
+      res.status(201).json({
+        success: true,
+        message: result.message,
+        userId: result.userId,
+      });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
   }
 
-  // 🟢 Đăng nhập
+  // 🟢 Đăng nhập (có token)
   async login(req, res) {
     try {
-      const result = await UserService.login(req.body);
-      res.status(200).json({ success: true, message: "Đăng nhập thành công", data: result });
+      const user = await UserService.login(req.body);
+
+      // 🧩 Tạo token
+      const token = jwt.sign(
+        { userId: user.userId, email: user.email, roleId: user.roleId },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Đăng nhập thành công",
+        data: { ...user, token },
+      });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
   }
 
   // 🟢 Lấy tất cả user
-
   async getAll(req, res) {
     try {
       const users = await UserService.getAllUsers();
@@ -82,17 +98,16 @@ class UserController {
     }
   }
 
-  // ✅ THÊM METHOD NÀY để xử lý toggle status
+  // ✅ Toggle status (enable/disable)
   async updateStatus(req, res) {
     try {
       const { isActive } = req.body;
       const userId = req.params.id;
 
       if (isActive === undefined || isActive === null) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "isActive là bắt buộc" 
-        });
+        return res
+          .status(400)
+          .json({ success: false, message: "isActive là bắt buộc" });
       }
 
       let result;
@@ -101,10 +116,9 @@ class UserController {
       } else if (isActive === true) {
         result = await UserService.enableUser(userId);
       } else {
-        return res.status(400).json({ 
-          success: false, 
-          message: "isActive phải là true hoặc false" 
-        });
+        return res
+          .status(400)
+          .json({ success: false, message: "isActive phải là true hoặc false" });
       }
 
       res.status(200).json({ success: true, message: result.message });

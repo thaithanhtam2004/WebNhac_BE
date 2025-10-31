@@ -1,27 +1,44 @@
 const pool = require('../db/connection').promise();
 
 const SongFeatureRepository = {
-  // Lưu đặc trưng bài hát vào DB
-  async create(songId, features) {
- const sql = `
-  INSERT INTO SongFeature 
-  (songId, tempoBpm, loudnessDb, energy, instrumentalness, danceability, speechiness, acousticness)
-  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-`;
+  // Danh sách cột của bảng (trừ createdAt)
+  columns: [
+    'songId', 'tempo', 'totalBeats', 'averageBeats',
+    'chromaStftMean','chromaStftStd','chromaStftVar',
+    'chromaCqMean','chromaCqStd','chromaCqVar',
+    'chromaCensMean','chromaCensStd','chromaCensVar',
+    'mfccMean','mfccStd','mfccVar',
+    'mfccDeltaMean','mfccDeltaStd','mfccDeltaVar',
+    'rmseMean','rmseStd','rmseVar',
+    'centMean','centStd','centVar',
+    'specBwMean','specBwStd','specBwVar',
+    'contrastMean','contrastStd','contrastVar',
+    'rolloffMean','rolloffStd','rolloffVar',
+    'tonnetzMean','tonnetzStd','tonnetzVar',
+    'zcrMean','zcrStd','zcrVar',
+    'harmMean','harmStd','harmVar',
+    'percMean','percStd','percVar',
+    'frameMean','frameStd','frameVar',
+    'emotionId'
+  ],
 
-    const params = [
-      songId,
-      features.tempo_bpm,
-      features.loudness_db,
-      features.energy,
-      features.instrumentalness,
-      features.danceability,
-      features.speechiness,
-      features.acousticness
-    ];
+  // Tạo mới đặc trưng bài hát
+  async create({ songId, features, emotionId = null }) {
+    // Tạo mảng giá trị theo đúng thứ tự cột
+    const params = this.columns.map(col => {
+      if (col === 'songId') return songId;
+      if (col === 'emotionId') return emotionId || null;
+      return features[col] !== undefined ? features[col] : null;
+    });
 
-    const [result] = await pool.query(sql, params);
-    return { featureId: result.insertId, songId, ...features };
+    // Tạo chuỗi dấu hỏi cho prepared statement
+    const placeholders = this.columns.map(() => '?').join(',');
+
+    const sql = `INSERT INTO SongFeature (${this.columns.join(',')}) VALUES (${placeholders})`;
+
+    await pool.query(sql, params);
+
+    return { songId, ...features, emotionId };
   },
 
   // Lấy đặc trưng theo songId

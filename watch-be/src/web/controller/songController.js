@@ -32,8 +32,8 @@ class SongController {
   static normalizeDate(dateString) {
     if (!dateString) return null;
     // Đảm bảo format YYYY-MM-DD và thêm thời gian 12:00:00 để tránh timezone issue
-    const date = new Date(dateString + 'T12:00:00');
-    return date.toISOString().split('T')[0];
+    const date = new Date(dateString + "T12:00:00");
+    return date.toISOString().split("T")[0];
   }
 
   // 🟢 Tạo bài hát mới (upload file & ảnh)
@@ -46,31 +46,31 @@ class SongController {
 
       // Validation đầy đủ
       if (!title?.trim()) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Vui lòng nhập tên bài hát" 
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng nhập tên bài hát",
         });
       }
 
       if (!singerId) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Vui lòng chọn nghệ sĩ" 
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng chọn nghệ sĩ",
         });
       }
 
       if (!genreId) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Vui lòng chọn thể loại" 
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng chọn thể loại",
         });
       }
 
       // Kiểm tra file nhạc bắt buộc
       if (!req.files?.file?.[0]) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Vui lòng upload file nhạc" 
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng upload file nhạc",
         });
       }
 
@@ -81,10 +81,9 @@ class SongController {
       // 🎵 Tính duration từ file audio
       const audioFile = req.files.file[0];
       try {
-        const metadata = await musicMetadata.parseBuffer(
-          audioFile.buffer,
-          { mimeType: audioFile.mimetype }
-        );
+        const metadata = await musicMetadata.parseBuffer(audioFile.buffer, {
+          mimeType: audioFile.mimetype,
+        });
         duration = Math.round(metadata.format.duration || 0);
         console.log(`⏱️ Duration: ${duration}s`);
       } catch (metaErr) {
@@ -96,8 +95,7 @@ class SongController {
       const uploadRes = await cloudinary.uploader.upload(
         `data:${audioFile.mimetype};base64,${base64Audio}`,
 
-{
-
+        {
           resource_type: "video",
           folder: "songs",
         }
@@ -134,10 +132,10 @@ class SongController {
         releaseDate: normalizedDate,
       });
 
-      res.status(201).json({ 
-        success: true, 
+      res.status(201).json({
+        success: true,
         message: result.message,
-        songId: result.songId 
+        songId: result.songId,
       });
     } catch (err) {
       console.error("❌ Lỗi tạo bài hát:", err);
@@ -148,7 +146,8 @@ class SongController {
   // 🟡 Cập nhật bài hát (có thể thay file/ảnh mới)
   async update(req, res) {
     try {
-      const { title, lyric, singerId, genreId, releaseDate, popularityScore } = req.body;
+      const { title, lyric, singerId, genreId, releaseDate, popularityScore } =
+        req.body;
       const songId = req.params.id;
 
       const existing = await SongService.getSongById(songId);
@@ -167,10 +166,9 @@ class SongController {
         const audioFile = req.files.file[0];
 
         try {
-          const metadata = await musicMetadata.parseBuffer(
-            audioFile.buffer,
-            { mimeType: audioFile.mimetype }
-          );
+          const metadata = await musicMetadata.parseBuffer(audioFile.buffer, {
+            mimeType: audioFile.mimetype,
+          });
           duration = Math.round(metadata.format.duration || 0);
           console.log(`⏱️ Duration mới: ${duration}s`);
         } catch (metaErr) {
@@ -193,9 +191,7 @@ class SongController {
         const cover = req.files.cover[0];
         const base64Cover = cover.buffer.toString("base64");
 
-const uploadRes = await cloudinary.uploader.upload(
-
-
+        const uploadRes = await cloudinary.uploader.upload(
           `data:${cover.mimetype};base64,${base64Cover}`,
           {
             resource_type: "image",
@@ -207,7 +203,11 @@ const uploadRes = await cloudinary.uploader.upload(
 
       // ✅ Chuẩn hóa releaseDate nếu có cập nhật
       let finalReleaseDate = existing.releaseDate;
-      if (releaseDate !== undefined && releaseDate !== null && releaseDate !== '') {
+      if (
+        releaseDate !== undefined &&
+        releaseDate !== null &&
+        releaseDate !== ""
+      ) {
         finalReleaseDate = SongController.normalizeDate(releaseDate);
         console.log("📅 Updated date:", releaseDate, "=>", finalReleaseDate);
       }
@@ -221,7 +221,10 @@ const uploadRes = await cloudinary.uploader.upload(
         fileUrl,
         coverUrl,
         releaseDate: finalReleaseDate,
-        popularityScore: popularityScore !== undefined ? popularityScore : existing.popularityScore,
+        popularityScore:
+          popularityScore !== undefined
+            ? popularityScore
+            : existing.popularityScore,
       });
 
       res.status(200).json({ success: true, message: result.message });
@@ -252,8 +255,8 @@ const uploadRes = await cloudinary.uploader.upload(
     }
   }
 
-
   // 🆕 Lấy danh sách bài hát mới nhất theo ngày phát hành
+
     async getSongByReleaseDate(req, res) {
         try {
             // Có thể thêm logic pagination (limit, offset) nếu cần,
@@ -273,6 +276,96 @@ const uploadRes = await cloudinary.uploader.upload(
             });
         }
     }
+
+    async searchSongs(req, res, next) {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập từ khóa tìm kiếm',
+        data: [],
+        total: 0
+      });
+    }
+
+    // ✅ Sửa: viết hoa SongService
+    const result = await SongService.searchSongs(q);
+    
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
   }
+}
+
+  // Tìm kiếm tổng hợp
+async searchAll(req, res, next) {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vui lòng nhập từ khóa tìm kiếm'
+      });
+    }
+
+    const result = await SongService.searchAll(q);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Lấy bài hát theo nghệ sĩ
+async getBySinger(req, res) {
+  try {
+    const songs = await SongService.getSongsBySinger(req.params.singerId);
+    res.status(200).json({ success: true, data: songs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// Lấy bài hát theo thể loại
+async getByGenre(req, res) {
+  try {
+    const songs = await SongService.getSongsByGenre(req.params.genreId);
+    res.status(200).json({ success: true, data: songs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+
+// 🆕 Lấy tất cả bài hát kèm trạng thái đã phân tích
+async getAllWithFeature(req, res) {
+  try {
+    const songs = await SongService.getAllSongsWithFeature(); // service đúng
+    res.status(200).json({ 
+      success: true, 
+      message: "Đã lấy danh sách bài hát kèm trạng thái phân tích", 
+      data: songs 
+    });
+  } catch (err) {
+    console.error("❌ Lỗi lấy danh sách bài hát với feature:", err);
+    res.status(500).json({ 
+      success: false, 
+      message: err.message || "Không thể lấy danh sách bài hát" 
+    });
+  }
+}
+
+}
+
+
+
+
+
+
+
+
+
 
 module.exports = new SongController();
