@@ -9,14 +9,24 @@ const HistoryRepository = {
   },
 
   // ➕ Insert lịch sử (lần nghe đầu tiên)
-  async addFirstTime(userId, songId) {
+async addFirstTime(userId, songId) {
+  console.log("Adding first time history:", { userId, songId });
+
+  try {
+    // Dùng INSERT ... ON DUPLICATE KEY UPDATE để tránh lỗi
     const sql = `
       INSERT INTO History (userId, songId, listenCount, firstListenedAt, lastListenedAt)
       VALUES (?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ON DUPLICATE KEY UPDATE listenCount = listenCount
     `;
     await pool.query(sql, [userId, songId]);
-  },
 
+    console.log("First time history added successfully.");
+  } catch (err) {
+    console.error("Error adding first time history:", err);
+  }
+}
+,
   // 🔁 Update lần nghe tiếp theo
   async updateListen(userId, songId) {
     const sql = `
