@@ -1,42 +1,64 @@
-// src/infras/repositories/historyRepository.js
 const pool = require("../db/connection").promise();
 
 const HistoryRepository = {
-  // ➕ Lưu lịch sử nghe nhạc
-  async add({ historyId, userId, songId }) {
-    const sql = `INSERT INTO History (historyId, userId, songId) VALUES (?, ?, ?)`;
-    await pool.query(sql, [historyId, userId, songId]);
+  // 🔎 Kiểm tra đã từng nghe bài này chưa
+  async findOne(userId, songId) {
+    const sql = `SELECT * FROM History WHERE userId = ? AND songId = ? LIMIT 1`;
+    const [rows] = await pool.query(sql, [userId, songId]);
+    return rows[0];
   },
 
-  // 📋 Lấy lịch sử nghe của người dùng
-  async findByUser(userId) {
+  // ➕ Insert lịch sử (lần nghe đầu tiên)
+  async addFirstTime(userId, songId) {
     const sql = `
-      SELECT h.*, s.title, s.coverUrl, s.singerId
-      FROM History h
-      JOIN Song s ON h.songId = s.songId
-      WHERE h.userId = ?
-      ORDER BY h.listenedAt DESC
+      INSERT INTO History (userId, songId, listenCount, firstListenedAt, lastListenedAt)
+      VALUES (?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     `;
-    const [rows] = await pool.query(sql, [userId]);
-    return rows;
+    await pool.query(sql, [userId, songId]);
   },
 
-  // ✏️ Cập nhật thời gian nghe
-  async updateListenedAt(historyId) {
-    const sql = `UPDATE History SET listenedAt = CURRENT_TIMESTAMP WHERE historyId = ?`;
-    await pool.query(sql, [historyId]);
+  // 🔁 Update lần nghe tiếp theo
+  async updateListen(userId, songId) {
+    const sql = `
+      UPDATE History
+      SET listenCount = listenCount + 1,
+          lastListenedAt = CURRENT_TIMESTAMP
+      WHERE userId = ? AND songId = ?
+    `;
+    await pool.query(sql, [userId, songId]);
   },
 
-  // ❌ Xóa toàn bộ lịch sử
-  async clear(userId) {
-    const sql = `DELETE FROM History WHERE userId = ?`;
-    await pool.query(sql, [userId]);
-  },
+  // 📋 Lấy lịch sử nghe
+async findByUser(userId) {
+  const sql = `
+    SELECT 
+        h.*, 
+        s.title, 
+        s.coverUrl, 
+        s.fileUrl,                  -- thêm fileUrl
+        sg.name AS singerName        -- lấy tên ca sĩ từ bảng Singer
+    FROM History h
+    JOIN Song s ON h.songId = s.songId
+    LEFT JOIN Singer sg ON s.singerId = sg.singerId
+    WHERE h.userId = ?
+    ORDER BY h.lastListenedAt DESC
+  `;
+  const [rows] = await pool.query(sql, [userId]);
+  return rows;
+},
 
-  // ❌ Xóa 1 bài cụ thể
+
+
+  // ❌ Xóa 1 bài
   async removeSong(userId, songId) {
     const sql = `DELETE FROM History WHERE userId = ? AND songId = ?`;
     await pool.query(sql, [userId, songId]);
+  },
+
+  // ❌ Xóa toàn bộ
+  async clear(userId) {
+    const sql = `DELETE FROM History WHERE userId = ?`;
+    await pool.query(sql, [userId]);
   },
 };
 

@@ -34,6 +34,7 @@ const historyRouter = require("./src/web/routers/historyRouter");
 const UserTrendProfile = require("./src/web/routers/userTrendProfileRoute");
 const recommendation= require("./src/web/routers/userRecommendationRoute")
 const emotion= require("./src/web/routers/emotionRoutes")
+const playlistSong= require("./src/web/routers/playlistSongRoute")
 // 🛠️ Dùng routes
 app.use("/api/users", userRouter);
 
@@ -51,6 +52,7 @@ app.use("/api/history", historyRouter);
 app.use("/api/trend", UserTrendProfile);
 app.use("/api/recommend",recommendation);
 app.use("/api/emotions",emotion);
+app.use("/api/playlistSong",playlistRouter);
 // 🚀 Route test
 app.get("/", (req, res) => {
   res.json({ success: true, message: "🚀 API Music Server đang hoạt động!" });

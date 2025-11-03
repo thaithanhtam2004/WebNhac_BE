@@ -98,7 +98,7 @@ const SongRepository = {
       FROM Song s
       LEFT JOIN Singer si ON s.singerId = si.singerId
       LEFT JOIN Genre g ON s.genreId = g.genreId
-      ORDER BY s.releaseDate DESC
+      ORDER BY s.releaseDate ASC
     `;
     const [rows] = await pool.query(sql);
     return rows;
