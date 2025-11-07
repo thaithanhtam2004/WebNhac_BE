@@ -1,6 +1,6 @@
 const { ulid } = require('ulid');
 const PlaylistRepository = require('../infras/repositories/playlistRepository');
-const PlaylistSongRepository = require('../infras/repositories/playlistSongRepository');
+const PlaylistSongRepository = require('../infras/repositories/playlistsongRepository');
 
 const PlaylistService = {
   async getPlaylistsByUser(userId) {
