@@ -24,6 +24,7 @@
     "music-metadata": "^11.9.0",
     "mysql2": "^3.15.1",
     "nodemailer": "^7.0.9",
+    "socket.io": "^4.8.1",
     "ulid": "^3.0.1"
   },
   "devDependencies": {

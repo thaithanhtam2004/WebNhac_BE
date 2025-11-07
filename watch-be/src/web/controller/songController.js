@@ -357,6 +357,26 @@ async getAllWithFeature(req, res) {
   }
 }
 
+// 🏆 Lấy bài hot trend
+async getHotTrend(req, res) {
+  try {
+    // Lấy limit từ query, mặc định 10
+    const limit = parseInt(req.query.limit) || 10;
+
+    const songs = await SongService.getHotTrend(limit);
+
+    res.status(200).json({
+      success: true,
+      message: `Lấy ${songs.data.length} bài hot trend thành công`,
+      data: songs.data
+    });
+  } catch (err) {
+    console.error("❌ Lỗi lấy bài hot trend:", err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+
 }
 
 

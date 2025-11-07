@@ -1,164 +1,163 @@
+import mysql.connector
 import pandas as pd
-from sqlalchemy import create_engine
-from datetime import datetime
-import json
-import sys
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
-# ===== Cấu hình DB =====
-DB_URI = "mysql+pymysql://root:root@localhost:3306/musicWeb"
-engine = create_engine(DB_URI)
+# ==========================
+# DATABASE CONFIG
+# ==========================
+DB_CONFIG = {
+    "host": "localhost",
+    "user": "root",
+    "password": "root",
+    "database": "musicWeb"
+}
 
-# ===== 1. Load dữ liệu =====
-songs = pd.read_sql("SELECT songId, singerId, genreId FROM Song", engine)
-song_emotions = pd.read_sql("SELECT * FROM Song_Emotion", engine)
-song_genres = pd.read_sql("SELECT * FROM SongGenre", engine)
-history = pd.read_sql("SELECT * FROM History", engine)
-favorite = pd.read_sql("SELECT * FROM Favorite", engine)
+def connect_db():
+    return mysql.connector.connect(**DB_CONFIG)
 
-# ===== 2. Tạo mapping =====
-user_listened = history.groupby("userId")["songId"].apply(set).to_dict()
-user_favorites = favorite.groupby("userId")["songId"].apply(set).to_dict()
-song_emotion_map = song_emotions.groupby("songId")["emotionId"].apply(set).to_dict()
-song_genre_map = song_genres.groupby("songId")["genreId"].apply(set).to_dict()
+# ==========================
+# LOAD DATA
+# ==========================
+def load_data():
+    conn = connect_db()
+    print("📥 Loading data...")
 
-# ===== 3. Item-based similarity =====
-WEIGHT_EMOTION = 1.0
-WEIGHT_GENRE = 0.5
-WEIGHT_SINGER = 0.8
+    songs = pd.read_sql("SELECT songId, title, singerId, genreId FROM Song", conn)
+    history = pd.read_sql("SELECT userId, songId, listenCount FROM History", conn)
+    features = pd.read_sql("SELECT * FROM SongFeature", conn)
+    profile = pd.read_sql("SELECT * FROM UserTrendProfile", conn)
 
-song_similarity = {}
-for i, song_i in songs.iterrows():
-    sim_dict = {}
-    emotions_i = song_emotion_map.get(song_i["songId"], set())
-    genres_i = song_genre_map.get(song_i["songId"], set())
-    singer_i = song_i["singerId"]
-    for j, song_j in songs.iterrows():
-        if song_i["songId"] == song_j["songId"]:
-            continue
-        emotions_j = song_emotion_map.get(song_j["songId"], set())
-        genres_j = song_genre_map.get(song_j["songId"], set())
-        singer_j = song_j["singerId"]
-        sim = (len(emotions_i & emotions_j) * WEIGHT_EMOTION +
-               len(genres_i & genres_j) * WEIGHT_GENRE)
-        if singer_i == singer_j:
-            sim += WEIGHT_SINGER
-        if sim > 0:
-            sim_dict[song_j["songId"]] = sim
-    song_similarity[song_i["songId"]] = sim_dict
+    conn.close()
+    # Ensure IDs are strings
+    for df, cols in [(songs, ["songId","singerId","genreId"]),
+                     (history, ["userId","songId"]),
+                     (features, ["songId","emotionId"]),
+                     (profile, ["userId","singerId","emotionId"])]:
+        for c in cols:
+            if c in df.columns:
+                df[c] = df[c].astype(str)
+    return songs, history, features, profile
 
-# ===== 4. Adaptive weights cho user =====
-adaptive_weights = {}  # user_id -> {"singer": {}, "genre": {}, "emotion": {}}
+# ==========================
+# BUILD ITEM SIMILARITY
+# ==========================
+def build_item_similarity(songs, features):
+    song_ids = songs.songId.tolist()
+    n = len(song_ids)
 
-def init_user_weights(user_id):
-    if user_id not in adaptive_weights:
-        adaptive_weights[user_id] = {"singer": {}, "genre": {}, "emotion": {}}
+    # --- Audio similarity ---
+    audio_cols = [c for c in features.columns if c not in ["songId","emotionId","createdAt"]]
+    audio_matrix = features.set_index("songId").reindex(song_ids)[audio_cols].fillna(0).values
+    norms = np.linalg.norm(audio_matrix, axis=1, keepdims=True)
+    norms[norms==0] = 1
+    audio_matrix = audio_matrix / norms
+    sim_audio = cosine_similarity(audio_matrix)
 
-def update_user_weights(user_id, song, alpha=0.05):
-    init_user_weights(user_id)
-    w = adaptive_weights[user_id]
+    # --- Emotion similarity ---
+    emotion_series = features.set_index("songId").reindex(song_ids)["emotionId"].fillna("NA").values
+    sim_emotion = (emotion_series[:, None] == emotion_series[None, :]).astype(float)
+
+    # --- Singer similarity ---
+    singer_series = songs.set_index("songId").reindex(song_ids)["singerId"].fillna("NA").values
+    sim_singer = (singer_series[:, None] == singer_series[None, :]).astype(float)
+
+    # --- Genre similarity ---
+    genre_series = songs.set_index("songId").reindex(song_ids)["genreId"].fillna("NA").values
+    sim_genre = (genre_series[:, None] == genre_series[None, :]).astype(float)
+
+    print(f"🎵 Item similarity built for {n} songs")
+    return song_ids, sim_audio, sim_emotion, sim_singer, sim_genre
+
+# ==========================
+# RECOMMENDATION PER USER
+# ==========================
+def recommend_for_user(userId, history, songs, song_ids,
+                       sim_audio, sim_emotion, sim_singer, sim_genre, profile, top_k=20):
+    listened = history[history.userId==userId]["songId"].tolist()
+    if not listened:
+        return pd.DataFrame(columns=["songId","score"])
+
+    # Get user profile weights
+    user_prof = profile[profile.userId==userId]
+    if user_prof.empty:
+        # fallback weights
+        w_audio, w_emotion, w_singer, w_genre = 0.5, 0.2, 0.15, 0.15
+    else:
+        # Average weights across profile entries
+        w_emotion = user_prof.emotionWeight.mean()
+        w_singer  = user_prof.singerWeight.mean()
+        w_like    = user_prof.likeWeight.mean()
+        w_audio   = 0.5  # fix audio weight
+        # make genre weight as remaining
+        w_genre = max(0.0, 1 - (w_audio + w_emotion + w_singer))
     
-    # Singer
-    singer_id = song["singerId"]
-    w["singer"][singer_id] = w["singer"].get(singer_id, 0.1) + alpha
-    
-    # Genre
-    genre_id = song["genreId"]
-    w["genre"][genre_id] = w["genre"].get(genre_id, 0.1) + alpha
-    
-    # Emotions
-    for e in song_emotion_map.get(song["songId"], set()):
-        w["emotion"][e] = w["emotion"].get(e, 0.1) + alpha
+    # Align listened songs in song_ids
+    valid_listened = [s for s in listened if s in song_ids]
+    if not valid_listened:
+        return pd.DataFrame(columns=["songId","score"])
 
-# ===== 5. Compute score dùng adaptive weights =====
-def compute_score_adaptive(user_id, song):
-    init_user_weights(user_id)
-    w = adaptive_weights[user_id]
-    
-    score = 0.0
-    score += w["singer"].get(song["singerId"], 0) * 0.4
-    score += w["genre"].get(song["genreId"], 0) * 0.2
-    for e in song_emotion_map.get(song["songId"], set()):
-        score += w["emotion"].get(e, 0) * 0.3
-    
-    # Favorite
-    if user_id in user_favorites and song["songId"] in user_favorites[user_id]:
-        score += 0.1
-    
-    # Item similarity
-    listened = user_listened.get(user_id, set())
-    for s in listened:
-        score += song_similarity.get(s, {}).get(song["songId"], 0) * 0.05
-    
-    return score
+    # Get indices
+    idx_map = {song:i for i,song in enumerate(song_ids)}
+    listen_idx = [idx_map[s] for s in valid_listened]
 
-# ===== 6. Realtime: user nghe bài mới =====
-def user_listened_song(user_id, song_id):
-    # Update lịch sử
-    if user_id not in user_listened:
-        user_listened[user_id] = set()
-    user_listened[user_id].add(song_id)
-    
-    song = songs.loc[songs["songId"] == song_id].iloc[0]
-    
-    # Cập nhật trọng số thích nghi
-    update_user_weights(user_id, song)
-    
-    # Cập nhật recommendation realtime
-    update_recommendation_for_user(user_id)
+    # Compute mean similarity for all songs
+    scores_audio = sim_audio[listen_idx,:].mean(axis=0)
+    scores_emotion = sim_emotion[listen_idx,:].mean(axis=0)
+    scores_singer = sim_singer[listen_idx,:].mean(axis=0)
+    scores_genre  = sim_genre[listen_idx,:].mean(axis=0)
 
-# ===== 7. Realtime incremental recommendation =====
-def update_recommendation_for_user(user_id):
-    listened = user_listened.get(user_id, set())
-    user_scores = []
-    for _, song in songs.iterrows():
-        if song["songId"] in listened:
-            continue
-        s = compute_score_adaptive(user_id, song)
-        if s > 0:
-            user_scores.append((song["songId"], s))
-    # Top 20
-    top_k = sorted(user_scores, key=lambda x: x[1], reverse=True)[:20]
-    recommendations = []
-    for song_id, score in top_k:
-        recommendations.append({
-            "userId": user_id,
-            "songId": song_id,
-            "score": score,
-            "generatedAt": datetime.now().isoformat()
-        })
-        # Lưu vào DB
-        engine.execute("""
-            INSERT INTO UserRecommendation(userId, songId, score, generatedAt)
-            VALUES (%s, %s, %s, NOW())
-            ON DUPLICATE KEY UPDATE score=%s, generatedAt=NOW()
-        """, (user_id, song_id, score, score))
-    print(json.dumps(recommendations), flush=True)
-    print(f"✅ Realtime recommendation updated for user {user_id}", file=sys.stderr)
+    # Weighted hybrid score
+    final_scores = w_audio*scores_audio + w_emotion*scores_emotion + w_singer*scores_singer + w_genre*scores_genre
 
-# ===== 8. Batch: tất cả user =====
-def run_batch():
-    recommendations = []
-    for user_id in user_listened.keys():
-        listened = user_listened.get(user_id, set())
-        user_scores = []
-        for _, song in songs.iterrows():
-            if song["songId"] in listened:
-                continue
-            s = compute_score_adaptive(user_id, song)
-            if s > 0:
-                user_scores.append((song["songId"], s))
-        top_k = sorted(user_scores, key=lambda x: x[1], reverse=True)[:20]
-        for song_id, score in top_k:
-            recommendations.append({
-                "userId": user_id,
-                "songId": song_id,
-                "score": score,
-                "generatedAt": datetime.now().isoformat()
-            })
-    rec_df = pd.DataFrame(recommendations)
-    rec_df.to_sql("UserRecommendation", engine, if_exists="replace", index=False)
-    print(json.dumps(recommendations), flush=True)
-    print("✅ Batch UserRecommendation updated!", file=sys.stderr)
+    # Remove already listened
+    for s in valid_listened:
+        final_scores[idx_map[s]] = -1
 
-# ===== 9. Ví dụ realtime =====
-# user_listened_song("user_1", "song_123")
+    # Top-K
+    top_idx = np.argsort(final_scores)[::-1][:top_k]
+    rec_songs = [song_ids[i] for i in top_idx]
+    rec_scores = [final_scores[i] for i in top_idx]
+
+    return pd.DataFrame({"songId": rec_songs, "score": rec_scores})
+
+# ==========================
+# SAVE RECOMMENDATIONS
+# ==========================
+def save_recommendations(userId, rec_df):
+    if rec_df.empty:
+        return
+    conn = connect_db()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM UserRecommendation WHERE userId=%s",(userId,))
+    sql = "REPLACE INTO UserRecommendation (userId,songId,score,generatedAt) VALUES (%s,%s,%s,NOW())"
+    values = [(userId,row.songId,float(row.score)) for row in rec_df.itertuples(index=False)]
+    cur.executemany(sql, values)
+    conn.commit()
+    cur.close()
+    conn.close()
+
+# ==========================
+# MAIN PIPELINE
+# ==========================
+def generate_recommendations():
+    songs, history, features, profile = load_data()
+    if songs.empty or history.empty:
+        print("No data to process")
+        return
+
+    print("⚙ Building item similarity...")
+    song_ids, sim_audio, sim_emotion, sim_singer, sim_genre = build_item_similarity(songs, features)
+
+    users = history.userId.unique()
+    print("🚀 Generating recommendations...")
+    for uid in users:
+        rec = recommend_for_user(uid, history, songs, song_ids,
+                                 sim_audio, sim_emotion, sim_singer, sim_genre, profile)
+        save_recommendations(uid, rec)
+        print(f"✅ Done {uid} ({len(rec)} recs)")
+
+    print("🎯 All recommendations completed!")
+
+if __name__ == "__main__":
+    generate_recommendations()
