@@ -1,88 +1,46 @@
 const UserRecommendationRepository = require("../infras/repositories/userRecommendationRepository");
-const SongRepository = require("../infras/repositories/songRepository");
 const { runPythonScript } = require("../utils/pythonRunner");
-
+const path = require("path");
+const scriptPath = path.join(__dirname, "..", "python", "recommendation.py");
+const SongRepository = require("../infras/repositories/songRepository");
 const UserRecommendationService = {
-  // Lấy gợi ý cơ bản (chỉ songId, score, generatedAt)
-  async getRecommendationsByUser(userId, limit = 20) {
-    const recommendations = await UserRecommendationRepository.getRecommendationsByUser(userId, limit);
-    if (!recommendations.length) return [];
-    return recommendations;
+  /** Realtime generate recommendation cho 1 user */
+  async generateRecommendationsForUser(userId) {
+    if (!userId) throw new Error("Thiếu userId");
+
+    // Gọi Python script realtime
+const recs = await runPythonScript(scriptPath, ["--userId", userId.toString()]);
+
+    if (!Array.isArray(recs)) throw new Error("Python return không đúng định dạng");
+
+    // Lưu vào bảng UserRecommendation
+    await UserRecommendationRepository.updateUserRecommendations(userId, recs);
+
+    return recs; // Trả về Node.js để emit realtime
   },
 
-  // Lấy gợi ý + thông tin chi tiết bài hát
-  async getRecommendationsWithSongDetail(userId, limit = 20) {
-    const recommendations = await UserRecommendationRepository.getRecommendationsByUser(userId, limit);
-    if (!recommendations.length) return [];
+   async getRecommendationsWithSongDetail(userId, limit = 20) {
+  // Lấy recs từ DB
+  const recs = await UserRecommendationRepository.getRecommendationsByUser(userId, limit);
 
-    const songIds = recommendations.map(r => r.songId);
-    const sql = `
-      SELECT 
-        s.songId,
-        s.title,
-        s.duration,
-        s.coverUrl,
-        s.fileUrl,
-        s.lyric,
-        s.views,
-        s.releaseDate,
-        s.popularityScore,
-        si.singerId,
-        si.name AS singerName,
-        g.genreId,
-        g.name AS genreName
-      FROM Song s
-      LEFT JOIN Singer si ON s.singerId = si.singerId
-      LEFT JOIN Genre g ON s.genreId = g.genreId
-      WHERE s.songId IN (?)
-    `;
-    const [songDetails] = await require("../infras/db/connection").promise().query(sql, [songIds]);
+  if (!Array.isArray(recs) || recs.length === 0) return [];
 
-    return recommendations.map(rec => {
-      const song = songDetails.find(s => s.songId === rec.songId) || null;
-      return { ...rec, song };
-    });
-  },
+  // map an toàn, lọc null
+  const songs = await Promise.all(
+    recs.map(async (r) => {
+      const song = await SongRepository.findById(r.songId);
+      if (!song) return null; // bỏ qua những songId không tồn tại
+      return {
+        ...song,
+        score: r.score,
+        generatedAt: r.generatedAt,
+      };
+    })
+  );
 
-  // CRUD các gợi ý
-  async addOrUpdateRecommendation(userId, songId, score, generatedAt) {
-    const success = await UserRecommendationRepository.addOrUpdateRecommendation(userId, songId, score, generatedAt);
-    if (!success) throw new Error("Thêm hoặc cập nhật gợi ý thất bại");
-    return { message: "Thêm hoặc cập nhật gợi ý thành công" };
-  },
+  return songs.filter((s) => s !== null);
+}
 
-  async addMultipleRecommendations(recommendations = []) {
-    if (!recommendations.length) throw new Error("Danh sách gợi ý rỗng");
-    const success = await UserRecommendationRepository.addMultipleRecommendations(recommendations);
-    if (!success) throw new Error("Thêm nhiều gợi ý thất bại");
-    return { message: "Thêm nhiều gợi ý thành công" };
-  },
-
-  async removeRecommendation(userId, songId) {
-    const success = await UserRecommendationRepository.removeRecommendation(userId, songId);
-    if (!success) throw new Error("Xóa gợi ý thất bại (có thể gợi ý không tồn tại)");
-    return { message: "Đã xóa gợi ý thành công" };
-  },
-
-  async updateUserRecommendations(userId, recommendations = []) {
-    const success = await UserRecommendationRepository.updateUserRecommendations(userId, recommendations);
-    if (!success) throw new Error("Cập nhật gợi ý cho user thất bại");
-    return { message: "Cập nhật gợi ý cho user thành công" };
-  },
-
-  // 🔹 Generate gợi ý cho tất cả user bằng Python script
-  async generateAllRecommendations() {
-    try {
-      // Giả sử Python script nằm ở "python/recommendation.py"
-      // Truyền flag --mode batch để tính cho tất cả user
-      const recommendations = await runPythonScript("python/recommendation.py", ["--mode", "batch"]);
-      console.log("✅ Python batch recommendations generated:", recommendations.length);
-      return { message: "Generate recommendation cho tất cả user thành công", data: recommendations };
-    } catch (error) {
-      console.error("❌ Failed to generate recommendations:", error.message);
-      throw new Error("Generate recommendation thất bại");
-    }
-  }
 };
 
 module.exports = UserRecommendationService;

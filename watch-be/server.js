@@ -32,15 +32,14 @@ const playlistRouter = require("./src/web/routers/playlistRouter");
 const favoriteRouter = require("./src/web/routers/favoriteRouter");
 const historyRouter = require("./src/web/routers/historyRouter");
 const UserTrendProfile = require("./src/web/routers/userTrendProfileRoute");
-const recommendation= require("./src/web/routers/userRecommendationRoute")
-const emotion= require("./src/web/routers/emotionRoutes")
-const playlistSong= require("./src/web/routers/playlistSongRoute")
+const recommendation = require("./src/web/routers/userRecommendationRoute");
+const emotion = require("./src/web/routers/emotionRoutes");
+const playlistSong = require("./src/web/routers/playlistSongRoute");
+
 // 🛠️ Dùng routes
 app.use("/api/users", userRouter);
-
-app.use("/api/albums", albumRoutes);       // CRUD album
-app.use("/api/albums", albumSongRouter);   // Bài hát trong album
-
+app.use("/api/albums", albumRoutes);
+app.use("/api/albums", albumSongRouter);
 app.use("/api/singers", singerRoutes);
 app.use("/api/genres", genreRoutes);
 app.use("/api/song-genres", songGenreRoutes);
@@ -50,9 +49,10 @@ app.use("/api/playlists", playlistRouter);
 app.use("/api/favorites", favoriteRouter);
 app.use("/api/history", historyRouter);
 app.use("/api/trend", UserTrendProfile);
-app.use("/api/recommend",recommendation);
-app.use("/api/emotions",emotion);
-app.use("/api/playlistSong",playlistRouter);
+app.use("/api/recommend", recommendation);
+app.use("/api/emotions", emotion);
+app.use("/api/playlistSong", playlistRouter);
+
 // 🚀 Route test
 app.get("/", (req, res) => {
   res.json({ success: true, message: "🚀 API Music Server đang hoạt động!" });
@@ -64,7 +64,18 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: "Lỗi máy chủ nội bộ" });
 });
 
+// ✅ Tạo HTTP server
+const http = require("http");
+const server = http.createServer(app);
+
+// ✅ IMPORT SOCKET
+const { initSocket } = require("./src/utils/socket");
+
+// ✅ INIT WEBSOCKET
+initSocket(server);
+
 // 🏁 Chạy server
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
   console.log(`🚀 Server chạy tại: http://${HOST}:${PORT}`);
+  console.log(`⚡ WebSocket: ws://${HOST}:${PORT}`);
 });

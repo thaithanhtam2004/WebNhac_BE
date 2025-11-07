@@ -122,6 +122,15 @@ async getSongsByGenre(genreId) {
     return songs;
   },
 
+  async getHotTrend(limit = 10) {
+  const songs = await SongRepository.findHotTrend(limit);
+  return {
+    success: true,
+    data: songs,
+    total: songs.length,
+    message: songs.length > 0 ? `Lấy ${songs.length} bài hot trend thành công` : 'Không có bài hot trend'
+  };
+}
 
 };
 
