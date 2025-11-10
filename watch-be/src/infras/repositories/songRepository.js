@@ -98,7 +98,7 @@ const SongRepository = {
       FROM Song s
       LEFT JOIN Singer si ON s.singerId = si.singerId
       LEFT JOIN Genre g ON s.genreId = g.genreId
-      ORDER BY s.releaseDate DESC
+      ORDER BY s.releaseDate ASC
     `;
     const [rows] = await pool.query(sql);
     return rows;
@@ -226,7 +226,22 @@ async findAllWithFeature() {
   return rows;
 },
 
-
+async findHotTrend(limit = 10) {
+  const sql = `
+    SELECT 
+      s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
+      s.views, s.releaseDate, s.popularityScore,
+      si.singerId, si.name AS singerName,
+      g.genreId, g.name AS genreName
+    FROM Song s
+    LEFT JOIN Singer si ON s.singerId = si.singerId
+    LEFT JOIN Genre g ON s.genreId = g.genreId
+    ORDER BY s.popularityScore DESC, s.releaseDate DESC
+    LIMIT ?
+  `;
+  const [rows] = await pool.query(sql, [limit]);
+  return rows;
+},
 
 
 };
