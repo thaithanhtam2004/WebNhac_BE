@@ -54,6 +54,43 @@ const SongFeatureController = {
       res.status(404).json({ error: error.message });
     }
   },
+
+
+   async predictEmotion(req, res) {
+    console.log("✅ Đã nhận request POST /api/features/predict-emotion");
+
+    try {
+      const { songId } = req.body;
+      const file = req.file;
+
+      if (!songId) return res.status(400).json({ error: "Thiếu songId" });
+      if (!file) return res.status(400).json({ error: "Thiếu file nhạc" });
+
+      const uploadDir = path.join(__dirname, "../../uploads/audio");
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+      const filePath = path.join(uploadDir, file.originalname);
+      fs.writeFileSync(filePath, file.buffer);
+      console.log("📂 Đã lưu file tạm tại:", filePath);
+
+      // 🧠 Gọi hàm predictEmotion trong service
+      const result = await SongFeatureService.predictEmotion(songId, filePath);
+
+      // Xóa file tạm sau khi xử lý
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("⚠️ Không thể xóa file tạm:", err.message);
+      });
+
+      return res.json({
+        success: true,
+        message: "Dự đoán cảm xúc bài hát thành công!",
+        data: result,
+      });
+    } catch (error) {
+      console.error("❌ Lỗi trong predictEmotion:", error);
+      return res.status(500).json({ error: error.message });
+    }
+  },
 };
 
 module.exports = SongFeatureController;

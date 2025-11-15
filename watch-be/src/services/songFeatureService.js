@@ -2,14 +2,13 @@ const path = require("path");
 const fs = require("fs");
 const { runPythonScript } = require("../utils/pythonRunner");
 const SongFeatureRepository = require("../infras/repositories/songFeatureRepository");
-const SongRepository = require("../infras/repositories/songRepository");
+const EmotionRepository = require("../infras/repositories/emotionRepository");
+
 const SongFeatureService = {
   async analyzeAndSave(songId, filePath, emotionId = null) {
-    // Validate
     if (!songId || !filePath) throw new Error("Thiếu songId hoặc filePath");
     if (!fs.existsSync(filePath)) throw new Error("File audio không tồn tại");
 
-    // Đường dẫn tuyệt đối đến Python script
     const scriptPath = path.join(__dirname, "../python/feature.py");
     if (!fs.existsSync(scriptPath)) throw new Error("File Python script không tồn tại");
 
@@ -22,7 +21,7 @@ const SongFeatureService = {
       throw new Error("Không thể trích xuất đặc trưng âm thanh");
     }
 
-    // Lưu vào DB (gọi theo object mới)
+    // Lưu vào DB
     const newFeature = await SongFeatureRepository.create({
       songId,
       features,
@@ -35,15 +34,52 @@ const SongFeatureService = {
     };
   },
 
-    async getAllSongsWithFeature() {
-    return await SongRepository.findAllWithFeature();
-  },
+  async predictEmotion(songId, filePath) {
+  if (!songId || !filePath) throw new Error("Thiếu songId hoặc filePath");
+  if (!fs.existsSync(filePath)) throw new Error("File audio không tồn tại");
 
-  async getFeatureBySong(songId) {
-    const feature = await SongFeatureRepository.findBySongId(songId);
-    if (!feature) throw new Error("Không tìm thấy đặc trưng cho bài hát này");
-    return feature;
-  },
+  const scriptPath = path.join(__dirname, "../python/featureClassify.py");
+  if (!fs.existsSync(scriptPath)) throw new Error("File Python script không tồn tại");
+
+  try {
+    const result = await runPythonScript(scriptPath, [filePath]);
+    if (result.error) throw new Error(result.error);
+
+    // Lấy emotionId từ tên cảm xúc
+    const emotionRecord = await EmotionRepository.findByName(result.emotion);
+    const emotionId = emotionRecord ? emotionRecord.emotionId : null;
+
+    if (!emotionId) {
+      console.warn(`Không tìm thấy emotionId cho tên: "${result.emotion}"`);
+      return { message: "Không tìm thấy emotion trong DB", emotion: result.emotion };
+    }
+
+    // 🔹 Tạo mới bản ghi nếu chưa có
+    const featureRecord = await SongFeatureRepository.findBySongId(songId);
+    if (featureRecord) {
+      // Update nếu đã có
+      await SongFeatureRepository.updateEmotionBySong(songId, emotionId);
+    } else {
+      // Tạo mới nếu chưa có
+      await SongFeatureRepository.create({
+        songId,
+        features: result.features,
+        emotionId,
+      });
+    }
+
+    return {
+      message: "Dự đoán cảm xúc bài hát thành công",
+      emotion: result.emotion,
+      emotionId,
+      features: result.features,
+    };
+  } catch (err) {
+    console.error("Lỗi khi dự đoán cảm xúc:", err.message);
+    throw new Error("Không thể dự đoán cảm xúc bài hát");
+  }
+}
+
 };
 
 module.exports = SongFeatureService;

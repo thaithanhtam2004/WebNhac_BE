@@ -10,9 +10,8 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 
-  timezone: '+07:00',      
-  dateStrings: true        
-
+  timezone: "+07:00",
+  dateStrings: true,
 });
 
 // Kiểm tra kết nối với pool
