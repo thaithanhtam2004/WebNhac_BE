@@ -1,7 +1,6 @@
 const pool = require('../db/connection').promise();
 
 const SongFeatureRepository = {
-  // Danh sách cột của bảng (trừ createdAt)
   columns: [
     'songId', 'tempo', 'totalBeats', 'averageBeats',
     'chromaStftMean','chromaStftStd','chromaStftVar',
@@ -22,31 +21,30 @@ const SongFeatureRepository = {
     'emotionId'
   ],
 
-  // Tạo mới đặc trưng bài hát
   async create({ songId, features, emotionId = null }) {
-    // Tạo mảng giá trị theo đúng thứ tự cột
     const params = this.columns.map(col => {
       if (col === 'songId') return songId;
       if (col === 'emotionId') return emotionId || null;
       return features[col] !== undefined ? features[col] : null;
     });
 
-    // Tạo chuỗi dấu hỏi cho prepared statement
     const placeholders = this.columns.map(() => '?').join(',');
-
     const sql = `INSERT INTO SongFeature (${this.columns.join(',')}) VALUES (${placeholders})`;
-
     await pool.query(sql, params);
-
     return { songId, ...features, emotionId };
   },
 
-  // Lấy đặc trưng theo songId
   async findBySongId(songId) {
     const sql = 'SELECT * FROM SongFeature WHERE songId = ?';
     const [rows] = await pool.query(sql, [songId]);
     return rows.length > 0 ? rows[0] : null;
-  }
+  },
+
+  async updateEmotionBySong(songId, emotionValue) {
+    const sql = `UPDATE SongFeature SET emotionId = ? WHERE songId = ?`;
+    await pool.query(sql, [emotionValue, songId]);
+    return { songId, emotionId: emotionValue };
+  },
 };
 
 module.exports = SongFeatureRepository;
