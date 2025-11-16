@@ -34,13 +34,14 @@ const historyRouter = require("./src/web/routers/historyRouter");
 const UserTrendProfile = require("./src/web/routers/userTrendProfileRoute");
 const recommendation = require("./src/web/routers/userRecommendationRoute");
 const emotion = require("./src/web/routers/emotionRoutes");
-
+const otpRouter = require("./src/web/routers/otpRouter");
 const playlistSong = require("./src/web/routers/playlistSongRoute");
 
 // 🛠️ Dùng routes
 app.use("/api/users", userRouter);
 app.use("/api/albums", albumRoutes);
 app.use("/api/albums", albumSongRouter);
+app.use("/api/users", otpRouter);
 
 app.use("/api/singers", singerRoutes);
 app.use("/api/genres", genreRoutes);
