@@ -15,7 +15,7 @@ const authMiddleware = async (req, res, next) => {
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Lấy thông tin user từ DB
+    // Lấy user từ DB
     const user = await UserRepository.findById(decoded.userId);
     if (!user || !user.isActive) {
       return res.status(401).json({
@@ -24,13 +24,13 @@ const authMiddleware = async (req, res, next) => {
       });
     }
 
-    // Lấy role (nếu cần)
+    // Lấy roleName
     if (user.roleId) {
       const role = await RoleRepository.findById(user.roleId);
       user.roleName = role ? role.roleName : null;
     }
 
-    req.user = user; // attach user vào request
+    req.user = user;
     next();
   } catch (err) {
     console.error("❌ Auth error:", err);

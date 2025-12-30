@@ -14,31 +14,23 @@ router.post("/login", UserController.login);
 // ==================
 // 🔒 ADMIN ONLY
 // ==================
-
-// Lấy danh sách user (trang quản lý)
 router.get("/", authMiddleware, isAdmin, UserController.getAll);
 
-// Khóa / mở user
 router.patch(
   "/:id/status",
   authMiddleware,
   isAdmin,
   UserController.updateStatus
 );
+
 router.delete("/:id", authMiddleware, isAdmin, UserController.disable);
 router.patch("/:id/enable", authMiddleware, isAdmin, UserController.enable);
 
 // ==================
 // 🔐 USER ĐÃ ĐĂNG NHẬP
 // ==================
-
-// Lấy thông tin user
 router.get("/:id", authMiddleware, UserController.getById);
-
-// Cập nhật thông tin
 router.put("/:id", authMiddleware, UserController.update);
-
-// Đổi mật khẩu
 router.put(
   "/:id/change-password",
   authMiddleware,
