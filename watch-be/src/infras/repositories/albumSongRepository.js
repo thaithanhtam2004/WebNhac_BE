@@ -1,7 +1,7 @@
 const pool = require("../db/connection").promise();
 
 const AlbumSongRepository = {
-  // 🟢 Lấy danh sách bài hát trong album - FIXED SQL (đổi alias aS -> als)
+  // 🟢 Lấy danh sách bài hát trong album
   async getSongsByAlbum(albumId) {
     const sql = `
       SELECT 
@@ -26,22 +26,35 @@ const AlbumSongRepository = {
     return rows;
   },
 
-  // 🟢 Thêm bài hát vào album
+  // 🟢 Thêm 1 bài hát vào album (Tự động tính trackNumber tiếp theo)
   async addSongToAlbum(albumId, songId, trackNumber = null) {
+    // Nếu không truyền trackNumber, dùng subquery để lấy MAX(trackNumber) + 1
+    // Sử dụng alias 'temp' để tránh lỗi "You can't specify target table for update in FROM clause"
     const sql = `
       INSERT INTO AlbumSong (albumId, songId, trackNumber)
-      VALUES (?, ?, ?)
+      VALUES (?, ?, COALESCE(?, (SELECT COALESCE(MAX(trackNumber), 0) + 1 FROM AlbumSong AS temp WHERE albumId = ?)))
       ON DUPLICATE KEY UPDATE trackNumber = VALUES(trackNumber)
     `;
-    const [result] = await pool.query(sql, [albumId, songId, trackNumber]);
+    
+    // Tham số: albumId, songId, trackNumber (nếu có), albumId (cho subquery)
+    const [result] = await pool.query(sql, [albumId, songId, trackNumber, albumId]);
     return result.affectedRows > 0;
   },
 
-  // 🆕 Thêm nhiều bài hát vào album (Sửa đổi)
+  // 🟢 Thêm nhiều bài hát (Transaction + Tự động tính trackNumber nối tiếp)
   async addMultipleSongsToAlbum(albumId, songIds) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
+
+      // 1. Lấy trackNumber lớn nhất hiện tại trong album đó
+      const [rows] = await connection.query(
+        `SELECT MAX(trackNumber) as maxTrack FROM AlbumSong WHERE albumId = ?`, 
+        [albumId]
+      );
+      
+      // Bắt đầu đếm từ số tiếp theo (Ví dụ max là 5 thì bắt đầu từ 6)
+      let currentTrack = (rows[0]?.maxTrack || 0) + 1;
 
       const insertSql = `
         INSERT INTO AlbumSong (albumId, songId, trackNumber)
@@ -49,41 +62,40 @@ const AlbumSongRepository = {
         ON DUPLICATE KEY UPDATE trackNumber = VALUES(trackNumber)
       `;
 
-      for (let i = 0; i < songIds.length; i++) {
-        // 🧩 Sửa: Tính toán trackNumber
-        const trackNumber = i + 1; // Gán trackNumber bằng index + 1
-        await connection.query(insertSql, [albumId, songIds[i], trackNumber]);
+      // 2. Chèn từng bài hát với trackNumber tăng dần
+      for (const songId of songIds) {
+        await connection.query(insertSql, [albumId, songId, currentTrack]);
+        currentTrack++; // Tăng số thứ tự
       }
 
       await connection.commit();
       return true;
     } catch (error) {
       await connection.rollback();
-      console.error("❌ addMultipleSongsToAlbum error:", error);
+      console.error("❌ addMultipleSongsToAlbum Transaction Error:", error);
       throw error;
     } finally {
       connection.release();
     }
   },
 
-
-  // 🟢 Xóa bài hát khỏi album
+  // 🔴 Xóa bài hát khỏi album
   async removeSongFromAlbum(albumId, songId) {
     const sql = `DELETE FROM AlbumSong WHERE albumId = ? AND songId = ?`;
     const [result] = await pool.query(sql, [albumId, songId]);
     return result.affectedRows > 0;
   },
 
-  // 🟢 Cập nhật toàn bộ danh sách bài hát trong album
+  // 🟡 Cập nhật lại toàn bộ danh sách (Dùng cho tính năng Reorder/Sắp xếp lại)
   async updateAlbumSongs(albumId, songs = []) {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
 
-      // Xóa danh sách cũ
+      // 1. Xóa toàn bộ liên kết cũ
       await connection.query(`DELETE FROM AlbumSong WHERE albumId = ?`, [albumId]);
 
-      // Thêm mới danh sách bài hát
+      // 2. Thêm lại danh sách mới với thứ tự mới
       if (songs.length > 0) {
         const insertSql = `INSERT INTO AlbumSong (albumId, songId, trackNumber) VALUES (?, ?, ?)`;
         for (const { songId, trackNumber } of songs) {
@@ -95,7 +107,7 @@ const AlbumSongRepository = {
       return true;
     } catch (error) {
       await connection.rollback();
-      console.error("❌ updateAlbumSongs error:", error);
+      console.error("❌ updateAlbumSongs Transaction Error:", error);
       throw error;
     } finally {
       connection.release();

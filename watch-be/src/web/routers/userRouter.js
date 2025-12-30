@@ -1,22 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const UserController = require("../controller/userController");
+const UserController = require("../controller/userController"); 
 
-// Public routes
+// Public
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 
-// Protected routes (thêm authMiddleware sau)
+// Protected (Nhớ thêm middleware auth sau này)
 router.get("/", UserController.getAll);
 router.get("/:id", UserController.getById);
 router.put("/:id", UserController.update);
 router.put("/:id/change-password", UserController.changePassword);
 
-// ✅ Route này khớp với frontend: PATCH /api/users/:userId/status
+// ✅ Route linh hoạt cho Frontend
 router.patch("/:id/status", UserController.updateStatus);
 
-// Giữ lại routes riêng lẻ nếu cần
+// ✅ Route Vô hiệu hóa (Soft Delete) - Gọi hàm disable trong Controller
 router.delete("/:id", UserController.disable);
+
+// ✅ Route Mở khóa - Gọi hàm enable trong Controller
 router.patch("/:id/enable", UserController.enable);
 
 module.exports = router;

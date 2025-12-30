@@ -113,7 +113,64 @@ class AlbumController {
         message: "Đã xóa album thành công",
       });
     } catch (err) {
+      console.error("❌ Lỗi xóa album:", err);const AlbumService = require("../../services/albumService");
+
+class AlbumController {
+  async getAll(req, res) {
+    try {
+      const albums = await AlbumService.getAllAlbums();
+      res.status(200).json({ success: true, data: albums });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
+  }
+
+  async getById(req, res) {
+    try {
+      const album = await AlbumService.getAlbumById(req.params.id);
+      res.status(200).json({ success: true, data: album });
+    } catch (err) {
+      const status = err.message.includes("không tồn tại") ? 404 : 500;
+      res.status(status).json({ success: false, message: err.message });
+    }
+  }
+
+  // 🟢 Tạo
+  async create(req, res) {
+    try {
+      // Request body có thể là form-data, cần parse cẩn thận
+      const result = await AlbumService.createAlbum(req.body, req.file);
+      res.status(201).json({ success: true, ...result });
+    } catch (err) {
+      console.error("❌ Lỗi tạo album:", err);
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
+
+  // 🟡 Cập nhật
+  async update(req, res) {
+    try {
+      const result = await AlbumService.updateAlbum(req.params.id, req.body, req.file);
+      res.status(200).json({ success: true, ...result });
+    } catch (err) {
+      console.error("❌ Lỗi cập nhật album:", err);
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
+
+  // 🔴 Xóa
+  async delete(req, res) {
+    try {
+      const result = await AlbumService.deleteAlbum(req.params.id);
+      res.status(200).json({ success: true, ...result });
+    } catch (err) {
       console.error("❌ Lỗi xóa album:", err);
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
+}
+
+module.exports = new AlbumController();
       res.status(500).json({
         success: false,
         message: err.message || "Không thể xóa album",
