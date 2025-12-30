@@ -1,24 +1,48 @@
 const express = require("express");
 const router = express.Router();
-const UserController = require("../controller/userController"); 
 
-// Public
+const UserController = require("../controller/userController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const isAdmin = require("../middlewares/isAdmin");
+
+// ==================
+// 🌍 PUBLIC ROUTES
+// ==================
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 
-// Protected (Nhớ thêm middleware auth sau này)
-router.get("/", UserController.getAll);
-router.get("/:id", UserController.getById);
-router.put("/:id", UserController.update);
-router.put("/:id/change-password", UserController.changePassword);
+// ==================
+// 🔒 ADMIN ONLY
+// ==================
 
-// ✅ Route linh hoạt cho Frontend
-router.patch("/:id/status", UserController.updateStatus);
+// Lấy danh sách user (trang quản lý)
+router.get("/", authMiddleware, isAdmin, UserController.getAll);
 
-// ✅ Route Vô hiệu hóa (Soft Delete) - Gọi hàm disable trong Controller
-router.delete("/:id", UserController.disable);
+// Khóa / mở user
+router.patch(
+  "/:id/status",
+  authMiddleware,
+  isAdmin,
+  UserController.updateStatus
+);
+router.delete("/:id", authMiddleware, isAdmin, UserController.disable);
+router.patch("/:id/enable", authMiddleware, isAdmin, UserController.enable);
 
-// ✅ Route Mở khóa - Gọi hàm enable trong Controller
-router.patch("/:id/enable", UserController.enable);
+// ==================
+// 🔐 USER ĐÃ ĐĂNG NHẬP
+// ==================
+
+// Lấy thông tin user
+router.get("/:id", authMiddleware, UserController.getById);
+
+// Cập nhật thông tin
+router.put("/:id", authMiddleware, UserController.update);
+
+// Đổi mật khẩu
+router.put(
+  "/:id/change-password",
+  authMiddleware,
+  UserController.changePassword
+);
 
 module.exports = router;

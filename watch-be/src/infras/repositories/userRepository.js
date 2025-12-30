@@ -11,6 +11,25 @@ const UserRepository = {
     const [rows] = await pool.query(sql);
     return rows;
   },
+  // 🟢 Tìm user theo email + role (dùng cho LOGIN)
+  async findByEmailWithRole(email) {
+    const sql = `
+      SELECT 
+        u.userId,
+        u.name,
+        u.email,
+        u.password,
+        u.phone,
+        u.roleId,
+        u.isActive,
+        r.roleName
+      FROM User u
+      LEFT JOIN Role r ON u.roleId = r.roleId
+      WHERE u.email = ?
+    `;
+    const [rows] = await pool.query(sql, [email]);
+    return rows[0] || null;
+  },
 
   // 🟢 Tìm user theo ID
   async findById(userId) {
@@ -31,8 +50,11 @@ const UserRepository = {
   },
 
   async existsByEmail(email) {
-    const [rows] = await pool.query(`SELECT 1 FROM User WHERE email = ? LIMIT 1`, [email]);
-    return rows.length > 0;
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) AS count FROM User WHERE email = ?`,
+      [email]
+    );
+    return rows[0].count > 0;
   },
 
   // 🟢 Tạo user
@@ -46,7 +68,16 @@ const UserRepository = {
     return user.userId;
   },
 
-  // 🟡 Cập nhật thông tin
+  // 🟡 Cập nhật mật khẩu
+  async updatePassword(userId, hashedPassword) {
+    const [result] = await pool.query(
+      `UPDATE User SET password = ? WHERE userId = ?`,
+      [hashedPassword, userId]
+    );
+    return result.affectedRows > 0;
+  },
+
+  // 🟡 Cập nhật thông tin user (không bao gồm password)
   async update(userId, data) {
     const fields = [];
     const values = [];
@@ -61,16 +92,23 @@ const UserRepository = {
     return result.affectedRows > 0;
   },
 
-  async updatePassword(userId, hashedPassword) {
-    const [result] = await pool.query(`UPDATE User SET password = ? WHERE userId = ?`, [hashedPassword, userId]);
+  // 🔴 Vô hiệu hóa user
+  async disable(userId) {
+    const [result] = await pool.query(
+      `UPDATE User SET isActive = FALSE WHERE userId = ?`,
+      [userId]
+    );
     return result.affectedRows > 0;
   },
 
-  // 🔴/🟢 Thay đổi trạng thái (Dùng chung cho cả khóa và mở)
-  async updateStatus(userId, isActive) {
-    const [result] = await pool.query(`UPDATE User SET isActive = ? WHERE userId = ?`, [isActive, userId]);
+  // 🟢 Kích hoạt lại user
+  async enable(userId) {
+    const [result] = await pool.query(
+      `UPDATE User SET isActive = TRUE WHERE userId = ?`,
+      [userId]
+    );
     return result.affectedRows > 0;
-  }
+  },
 };
 
 module.exports = UserRepository;

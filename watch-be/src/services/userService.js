@@ -21,12 +21,27 @@ const UserService = {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = ulid();
 
-    await UserRepository.create({ userId, name, email, phone, password: hashedPassword, roleId });
-    return { message: "Đăng ký thành công", userId };
-  },
+    // ✅ TỰ ĐỘNG GÁN ROLE USER
+    const USER_ROLE_ID = 1;
 
+    await UserRepository.create({
+      userId,
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      roleId: USER_ROLE_ID,
+      isActive: 1,
+    });
+
+    return {
+      message: "Đăng ký thành công",
+      userId,
+      role: "USER",
+    };
+  },
   async login({ email, password }) {
-    const user = await UserRepository.findByEmail(email);
+    const user = await UserRepository.findByEmailWithRole(email);
     if (!user) throw new Error("Email hoặc mật khẩu không đúng");
     
     const match = await bcrypt.compare(password, user.password);
@@ -37,7 +52,7 @@ const UserService = {
     const { password: _, ...safeUser } = user;
     return safeUser;
   },
-
+  // 🟡 Cập nhật thông tin user
   async updateUser(userId, data) {
     const success = await UserRepository.update(userId, data);
     if (!success) throw new Error("Cập nhật thất bại hoặc không có gì thay đổi");
@@ -45,8 +60,12 @@ const UserService = {
   },
 
   async changePassword(userId, { oldPassword, newPassword }) {
-    // Logic check pass cũ ở đây (cần query lấy pass từ DB trước)
-    // Tạm thời bỏ qua bước query để code gọn, bạn tự bổ sung nếu cần
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error("Người dùng không tồn tại");
+
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new Error("Mật khẩu cũ không đúng");
+
     const hashed = await bcrypt.hash(newPassword, 10);
     await UserRepository.updatePassword(userId, hashed);
     return { message: "Đổi mật khẩu thành công" };

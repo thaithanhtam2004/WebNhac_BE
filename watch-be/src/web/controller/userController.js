@@ -9,13 +9,32 @@ class UserController {
       res.status(201).json({ success: true, ...result });
     } catch (err) { res.status(400).json({ success: false, message: err.message }); }
   }
-
   async login(req, res) {
     try {
       const user = await UserService.login(req.body);
-      const token = jwt.sign({ userId: user.userId, roleId: user.roleId }, process.env.JWT_SECRET, { expiresIn: "7d" });
-      res.status(200).json({ success: true, message: "Đăng nhập thành công", data: { ...user, token } });
-    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+
+      const token = jwt.sign(
+        {
+          userId: user.userId,
+          email: user.email,
+          roleId: user.roleId,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Đăng nhập thành công",
+        data: {
+          ...user,
+          token,
+          roleName: user.roleName, // ✅ QUAN TRỌNG
+        },
+      });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
   }
 
   async getAll(req, res) {
@@ -70,9 +89,31 @@ class UserController {
   // 3️⃣ Kích hoạt lại (Map với PATCH /enable)
   async enable(req, res) {
     try {
-      await UserService.toggleUserStatus(req.params.id, true); // True = Mở
-      res.status(200).json({ success: true, message: "Đã kích hoạt lại người dùng" });
-    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+      const { isActive } = req.body;
+      const userId = req.params.id;
+
+      if (isActive === undefined || isActive === null) {
+        return res
+          .status(400)
+          .json({ success: false, message: "isActive là bắt buộc" });
+      }
+
+      let result;
+      if (isActive === false) {
+        result = await UserService.disableUser(userId);
+      } else if (isActive === true) {
+        result = await UserService.enableUser(userId);
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "isActive phải là true hoặc false",
+        });
+      }
+
+      res.status(200).json({ success: true, message: result.message });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
   }
 }
 
