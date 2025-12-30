@@ -1,7 +1,7 @@
 const UserRecommendationRepository = require("../infras/repositories/userRecommendationRepository");
 const { runPythonScript } = require("../utils/pythonRunner");
 const path = require("path");
-const scriptPath = path.join(__dirname, "..", "python", "recommendation.py");
+const scriptPath = path.join(__dirname, "..", "python", "recommendationV2.py");
 const SongRepository = require("../infras/repositories/songRepository");
 const UserRecommendationService = {
   /** Realtime generate recommendation cho 1 user */
@@ -19,27 +19,40 @@ const recs = await runPythonScript(scriptPath, ["--userId", userId.toString()]);
     return recs; // Trả về Node.js để emit realtime
   },
 
-   async getRecommendationsWithSongDetail(userId, limit = 20) {
-  // Lấy recs từ DB
-  const recs = await UserRecommendationRepository.getRecommendationsByUser(userId, limit);
+  async getRecommendationsWithSongDetail(userId, limit = 20) {
+    // 1. Thử lấy gợi ý từ DB (do Python tạo ra)
+    let recs = await UserRecommendationRepository.getRecommendationsByUser(userId, limit);
 
-  if (!Array.isArray(recs) || recs.length === 0) return [];
+    // 2. KIỂM TRA: Nếu không có gợi ý (User mới hoặc Python chưa chạy)
+    if (!Array.isArray(recs) || recs.length === 0) {
+      console.log(`[Fallback] User ${userId} chưa có gợi ý, đang lấy nhạc ngẫu nhiên...`);
+      
+      // Gọi hàm findRandom vừa thêm ở Bước 1
+      const randomSongs = await SongRepository.findRandom(10); 
+      
+      // Trả về luôn danh sách nhạc ngẫu nhiên
+      return randomSongs.map(s => ({
+        ...s,
+        score: 0,
+        isFallback: true 
+      }));
+    }
 
-  // map an toàn, lọc null
-  const songs = await Promise.all(
-    recs.map(async (r) => {
-      const song = await SongRepository.findById(r.songId);
-      if (!song) return null; // bỏ qua những songId không tồn tại
-      return {
-        ...song,
-        score: r.score,
-        generatedAt: r.generatedAt,
-      };
-    })
-  );
+    // 3. Nếu ĐÃ CÓ gợi ý thì chạy tiếp logic cũ của bạn
+    const songs = await Promise.all(
+      recs.map(async (r) => {
+        const song = await SongRepository.findById(r.songId);
+        if (!song) return null;
+        return {
+          ...song,
+          score: r.score,
+          generatedAt: r.generatedAt,
+        };
+      })
+    );
 
-  return songs.filter((s) => s !== null);
-}
+    return songs.filter((s) => s !== null);
+  }
 
 };
 

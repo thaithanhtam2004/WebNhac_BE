@@ -20,5 +20,5 @@ router.post(
 // 🎵 3️⃣ Lấy đặc trưng bài hát theo songId
 router.get("/:songId", SongFeatureController.getBySongId);
 
-
+router.get("/emotion-name/:songId", SongFeatureController.getEmotionNameBySong);
 module.exports = router;

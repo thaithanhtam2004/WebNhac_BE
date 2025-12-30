@@ -91,6 +91,28 @@ const SongFeatureController = {
       return res.status(500).json({ error: error.message });
     }
   },
+
+  // 🎭 Lấy tên cảm xúc dựa trên songId (Bắc cầu: SongFeature -> Emotion)
+  async getEmotionNameBySong(req, res) {
+    try {
+      const { songId } = req.params;
+      
+      if (!songId) {
+        return res.status(400).json({ success: false, error: "Thiếu songId" });
+      }
+
+      // Gọi service để xử lý logic bắc cầu qua các bảng
+      const result = await SongFeatureService.getSongEmotionName(songId);
+
+      return res.json({
+        success: true,
+        data: result, // result này chứa { songId, emotionId, emotionName }
+      });
+    } catch (error) {
+      console.error("❌ Lỗi trong getEmotionNameBySong:", error);
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  },
 };
 
 module.exports = SongFeatureController;

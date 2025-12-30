@@ -78,7 +78,29 @@ const SongFeatureService = {
     console.error("Lỗi khi dự đoán cảm xúc:", err.message);
     throw new Error("Không thể dự đoán cảm xúc bài hát");
   }
-}
+},
+
+  async getSongEmotionName(songId) {
+    if (!songId) throw new Error("Thiếu songId");
+
+    // Tận dụng hàm getEmotionBySongId bạn vừa viết ở Repository
+    // (Giả sử bạn đặt hàm đó trong EmotionRepository hoặc SongFeatureRepository)
+    const emotionData = await EmotionRepository.getEmotionBySongId(songId);
+
+    if (!emotionData) {
+      return { 
+        songId, 
+        emotionName: null, 
+        message: "Bài hát chưa được phân tích cảm xúc" 
+      };
+    }
+
+    return {
+      songId,
+      emotionId: emotionData.emotionId,
+      emotionName: emotionData.emotionName, // Đây là cái bạn cần đưa lên bảng
+    };
+  },
 
 };
 

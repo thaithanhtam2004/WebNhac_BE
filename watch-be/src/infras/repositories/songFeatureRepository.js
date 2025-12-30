@@ -45,6 +45,22 @@ const SongFeatureRepository = {
     await pool.query(sql, [emotionValue, songId]);
     return { songId, emotionId: emotionValue };
   },
+
+async getEmotionBySongId(songId) {
+  const sql = `
+    SELECT 
+      e.emotionId,
+      e.name AS emotionName,
+      e.description
+    FROM SongFeature sf
+    JOIN Emotion e
+      ON sf.emotionId = e.emotionId
+    WHERE sf.songId = ?
+  `;
+  const [rows] = await pool.query(sql, [songId]);
+  return rows.length > 0 ? rows[0] : null;
+}
+
 };
 
 module.exports = SongFeatureRepository;

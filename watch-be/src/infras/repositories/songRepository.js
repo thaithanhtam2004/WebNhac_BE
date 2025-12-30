@@ -211,21 +211,32 @@ async findAllWithFeature() {
       s.views,
       s.releaseDate,
       s.popularityScore,
+
       si.singerId,
       si.name AS singerName,
+
       g.genreId,
       g.name AS genreName,
-      CASE WHEN sf.songId IS NOT NULL THEN 1 ELSE 0 END AS hasFeature
+
+      CASE 
+        WHEN sf.songId IS NOT NULL THEN 1 
+        ELSE 0 
+      END AS hasFeature,
+
+      sf.emotionId,
+      e.name AS emotionName
+
     FROM Song s
     LEFT JOIN Singer si ON s.singerId = si.singerId
     LEFT JOIN Genre g ON s.genreId = g.genreId
     LEFT JOIN SongFeature sf ON s.songId = sf.songId
+    LEFT JOIN Emotion e ON sf.emotionId = e.emotionId
     ORDER BY s.createdAt DESC
   `;
   const [rows] = await pool.query(sql);
   return rows;
-},
-
+}
+,
 async findHotTrend(limit = 10) {
   const sql = `
     SELECT 
@@ -243,6 +254,23 @@ async findHotTrend(limit = 10) {
   return rows;
 },
 
+// 🎲 Lấy bài hát ngẫu nhiên làm dự phòng khi không có gợi ý
+  async findRandom(limit = 10) {
+    const sql = `
+      SELECT 
+        s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
+        s.views, s.releaseDate, s.popularityScore,
+        si.singerId, si.name AS singerName,
+        g.genreId, g.name AS genreName
+      FROM Song s
+      LEFT JOIN Singer si ON s.singerId = si.singerId
+      LEFT JOIN Genre g ON s.genreId = g.genreId
+      ORDER BY RAND()
+      LIMIT ?
+    `;
+    const [rows] = await pool.query(sql, [limit]);
+    return rows;
+  },
 
 };
 
