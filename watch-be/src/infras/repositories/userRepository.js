@@ -21,6 +21,25 @@ const UserRepository = {
     const [rows] = await pool.query(sql);
     return rows;
   },
+  // 🟢 Tìm user theo email + role (dùng cho LOGIN)
+  async findByEmailWithRole(email) {
+    const sql = `
+      SELECT 
+        u.userId,
+        u.name,
+        u.email,
+        u.password,
+        u.phone,
+        u.roleId,
+        u.isActive,
+        r.roleName
+      FROM User u
+      LEFT JOIN Role r ON u.roleId = r.roleId
+      WHERE u.email = ?
+    `;
+    const [rows] = await pool.query(sql, [email]);
+    return rows[0] || null;
+  },
 
   // 🟢 Tìm user theo ID (không gồm password)
   async findById(userId) {
@@ -56,7 +75,10 @@ const UserRepository = {
 
   // 🟢 Kiểm tra email tồn tại
   async existsByEmail(email) {
-    const [rows] = await pool.query(`SELECT COUNT(*) AS count FROM User WHERE email = ?`, [email]);
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) AS count FROM User WHERE email = ?`,
+      [email]
+    );
     return rows[0].count > 0;
   },
 
@@ -80,7 +102,10 @@ const UserRepository = {
 
   // 🟡 Cập nhật mật khẩu
   async updatePassword(userId, hashedPassword) {
-    const [result] = await pool.query(`UPDATE User SET password = ? WHERE userId = ?`, [hashedPassword, userId]);
+    const [result] = await pool.query(
+      `UPDATE User SET password = ? WHERE userId = ?`,
+      [hashedPassword, userId]
+    );
     return result.affectedRows > 0;
   },
 
@@ -112,17 +137,21 @@ const UserRepository = {
 
   // 🔴 Vô hiệu hóa user
   async disable(userId) {
-    const [result] = await pool.query(`UPDATE User SET isActive = FALSE WHERE userId = ?`, [userId]);
+    const [result] = await pool.query(
+      `UPDATE User SET isActive = FALSE WHERE userId = ?`,
+      [userId]
+    );
     return result.affectedRows > 0;
   },
-
 
   // 🟢 Kích hoạt lại user
   async enable(userId) {
-    const [result] = await pool.query(`UPDATE User SET isActive = TRUE WHERE userId = ?`, [userId]);
+    const [result] = await pool.query(
+      `UPDATE User SET isActive = TRUE WHERE userId = ?`,
+      [userId]
+    );
     return result.affectedRows > 0;
   },
-
 };
 
 module.exports = UserRepository;

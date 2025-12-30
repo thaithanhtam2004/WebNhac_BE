@@ -1,22 +1,48 @@
 const express = require("express");
 const router = express.Router();
-const UserController = require("../controller/userController");
 
-// Public routes
+const UserController = require("../controller/userController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const isAdmin = require("../middlewares/isAdmin");
+
+// ==================
+// 🌍 PUBLIC ROUTES
+// ==================
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 
-// Protected routes (thêm authMiddleware sau)
-router.get("/", UserController.getAll);
-router.get("/:id", UserController.getById);
-router.put("/:id", UserController.update);
-router.put("/:id/change-password", UserController.changePassword);
+// ==================
+// 🔒 ADMIN ONLY
+// ==================
 
-// ✅ Route này khớp với frontend: PATCH /api/users/:userId/status
-router.patch("/:id/status", UserController.updateStatus);
+// Lấy danh sách user (trang quản lý)
+router.get("/", authMiddleware, isAdmin, UserController.getAll);
 
-// Giữ lại routes riêng lẻ nếu cần
-router.delete("/:id", UserController.disable);
-router.patch("/:id/enable", UserController.enable);
+// Khóa / mở user
+router.patch(
+  "/:id/status",
+  authMiddleware,
+  isAdmin,
+  UserController.updateStatus
+);
+router.delete("/:id", authMiddleware, isAdmin, UserController.disable);
+router.patch("/:id/enable", authMiddleware, isAdmin, UserController.enable);
+
+// ==================
+// 🔐 USER ĐÃ ĐĂNG NHẬP
+// ==================
+
+// Lấy thông tin user
+router.get("/:id", authMiddleware, UserController.getById);
+
+// Cập nhật thông tin
+router.put("/:id", authMiddleware, UserController.update);
+
+// Đổi mật khẩu
+router.put(
+  "/:id/change-password",
+  authMiddleware,
+  UserController.changePassword
+);
 
 module.exports = router;

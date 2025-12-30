@@ -31,21 +31,27 @@ const UserService = {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = ulid();
 
+    // ✅ TỰ ĐỘNG GÁN ROLE USER
+    const USER_ROLE_ID = 1;
+
     await UserRepository.create({
       userId,
       name,
       email,
       phone,
       password: hashedPassword,
-      roleId: data.roleId || null,
+      roleId: USER_ROLE_ID,
+      isActive: 1,
     });
 
-    return { message: "Đăng ký thành công", userId };
+    return {
+      message: "Đăng ký thành công",
+      userId,
+      role: "USER",
+    };
   },
-
   async login({ email, password }) {
-    const user = await UserRepository.findByEmail(email);
-
+    const user = await UserRepository.findByEmailWithRole(email);
     if (!user) throw new Error("Email hoặc mật khẩu không đúng");
 
     const match = await bcrypt.compare(password, user.password);
@@ -56,7 +62,6 @@ const UserService = {
     const { password: _, ...safeUser } = user;
     return safeUser;
   },
-
   // 🟡 Cập nhật thông tin user
   async updateUser(userId, data) {
     const existing = await UserRepository.findById(userId);
@@ -70,7 +75,7 @@ const UserService = {
 
   // 🟡 Đổi mật khẩu
   async changePassword(userId, { oldPassword, newPassword }) {
-    const user = await UserRepository.findByEmail(userId);
+    const user = await UserRepository.findById(userId);
     if (!user) throw new Error("Người dùng không tồn tại");
 
     const valid = await bcrypt.compare(oldPassword, user.password);
