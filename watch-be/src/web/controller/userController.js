@@ -15,23 +15,28 @@ class UserController {
       res.status(400).json({ success: false, message: err.message });
     }
   }
-
-  // 🟢 Đăng nhập (có token)
   async login(req, res) {
     try {
       const user = await UserService.login(req.body);
 
-      // 🧩 Tạo token
       const token = jwt.sign(
-        { userId: user.userId, email: user.email, roleId: user.roleId },
+        {
+          userId: user.userId,
+          email: user.email,
+          roleId: user.roleId,
+        },
         process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
+        { expiresIn: "7d" }
       );
 
       res.status(200).json({
         success: true,
         message: "Đăng nhập thành công",
-        data: { ...user, token },
+        data: {
+          ...user,
+          token,
+          roleName: user.roleName, // ✅ QUAN TRỌNG
+        },
       });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
@@ -116,9 +121,10 @@ class UserController {
       } else if (isActive === true) {
         result = await UserService.enableUser(userId);
       } else {
-        return res
-          .status(400)
-          .json({ success: false, message: "isActive phải là true hoặc false" });
+        return res.status(400).json({
+          success: false,
+          message: "isActive phải là true hoặc false",
+        });
       }
 
       res.status(200).json({ success: true, message: result.message });
