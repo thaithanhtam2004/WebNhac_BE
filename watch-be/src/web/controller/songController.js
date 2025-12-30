@@ -190,11 +190,31 @@ class SongController {
     } catch (error) { res.status(500).json({success: false, message: error.message}); }
   }
 
-  async searchAll(req, res) {
+ async searchAll(req, res) {
     try {
-        const result = await SongService.searchAll(req.query.q);
-        res.status(200).json(result);
-    } catch (error) { res.status(500).json({success: false, message: error.message}); }
+      const q = req.query.q;
+
+      if (!q || !q.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng nhập từ khóa"
+        });
+      }
+
+      const data = await SongService.searchAll(q);
+
+      res.status(200).json({
+        success: true,
+        data
+      });
+    } catch (err) {
+      console.error("❌ SearchAll Error:", err);
+      res.status(500).json({
+        success: false,
+        message: "Search all failed",
+        error: err.message
+      });
+    }
   }
 
   async getBySinger(req, res) {
@@ -224,6 +244,31 @@ class SongController {
         const result = await SongService.getHotTrend(limit);
         res.status(200).json(result);
     } catch (err) { res.status(500).json({ success: false, message: err.message }); }
+  }
+  async findByAlbumId(albumId) {
+    const sql = `
+      SELECT 
+        s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
+        s.views, s.releaseDate, s.popularityScore,
+        si.singerId, si.name AS singerName,
+        g.genreId, g.name AS genreName
+      FROM Song s
+      LEFT JOIN Singer si ON s.singerId = si.singerId
+      LEFT JOIN Genre g ON s.genreId = g.genreId
+      INNER JOIN AlbumSong asong ON s.songId = asong.songId
+      WHERE asong.albumId = ?
+      ORDER BY asong.trackNumber ASC, s.title ASC
+    `;
+    const [rows] = await pool.query(sql, [albumId]);
+    return rows;
+  }
+  async getByAlbum(req, res) {
+    try {
+      const songs = await SongService.getSongsByAlbum(req.params.albumId);
+      res.status(200).json({ success: true, data: songs });
+    } catch (err) {
+      res.status(500).json({ success: false, message: err.message });
+    }
   }
 }
 

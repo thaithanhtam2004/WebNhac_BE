@@ -75,6 +75,17 @@ const AlbumRepository = {
     const [rows] = await pool.query(sql, [searchTerm, searchTerm]);
     return rows;
   },
+
+  async findById(albumId) {
+    const sql = `
+      SELECT a.*, s.name AS singerName 
+      FROM Album a
+      LEFT JOIN Singer s ON a.singerId = s.singerId
+      WHERE a.albumId = ?
+    `;
+    const [rows] = await pool.query(sql, [albumId]);
+    return rows[0] || null;
+  },
 };
 
 module.exports = AlbumRepository;

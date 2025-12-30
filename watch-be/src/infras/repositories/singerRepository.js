@@ -64,6 +64,12 @@ const SingerRepository = {
     const [rows] = await pool.query(sql, [`%${keyword}%`]);
     return rows;
   },
+
+  async findById(singerId) {
+    const sql = `SELECT * FROM Singer WHERE singerId = ?`;
+    const [rows] = await pool.query(sql, [singerId]);
+    return rows[0] || null;
+  },
 };
 
 module.exports = SingerRepository;

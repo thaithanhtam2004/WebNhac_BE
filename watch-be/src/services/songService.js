@@ -105,9 +105,7 @@ const SongService = {
   }, 
 
   async searchAll(query) {
-    if (!query || query.trim() === '') return { success: false, data: {}, message: 'Vui lòng nhập từ khóa' };
-    const results = await SongRepository.searchAll(query.trim());
-    return { success: true, data: results, message: 'Tìm kiếm thành công' };
+    return await SongRepository.searchAll(query.trim());
   },
 
   async getSongsBySinger(singerId) { return await SongRepository.findBySingerId(singerId); },
@@ -117,7 +115,12 @@ const SongService = {
   async getHotTrend(limit = 10) {
     const songs = await SongRepository.findHotTrend(limit);
     return { success: true, data: songs, message: 'Lấy hot trend thành công' };
+  },
+
+  async getSongsByAlbum(albumId) {
+    return await SongRepository.findByAlbumId(albumId);
   }
+
 };
 
 module.exports = SongService;

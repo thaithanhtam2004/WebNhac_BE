@@ -58,6 +58,12 @@ const GenreRepository = {
     const [result] = await pool.query(sql, [genreId]);
     return result.affectedRows > 0;
   },
+
+  async findById(genreId) {
+    const sql = `SELECT * FROM Genre WHERE genreId = ?`;
+    const [rows] = await pool.query(sql, [genreId]);
+    return rows[0] || null;
+  },
 };
 
 module.exports = GenreRepository;

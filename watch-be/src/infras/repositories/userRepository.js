@@ -11,27 +11,18 @@ const UserRepository = {
     const [rows] = await pool.query(sql);
     return rows;
   },
-  // 🟢 Tìm user theo email + role (dùng cho LOGIN)
+  
+  // ... (giữ nguyên các hàm findByEmail, findById...) ...
   async findByEmailWithRole(email) {
     const sql = `
-      SELECT 
-        u.userId,
-        u.name,
-        u.email,
-        u.password,
-        u.phone,
-        u.roleId,
-        u.isActive,
-        r.roleName
-      FROM User u
-      LEFT JOIN Role r ON u.roleId = r.roleId
+      SELECT u.userId, u.name, u.email, u.password, u.phone, u.roleId, u.isActive, r.roleName
+      FROM User u LEFT JOIN Role r ON u.roleId = r.roleId
       WHERE u.email = ?
     `;
     const [rows] = await pool.query(sql, [email]);
     return rows[0] || null;
   },
 
-  // 🟢 Tìm user theo ID
   async findById(userId) {
     const sql = `
       SELECT u.userId, u.name, u.email, u.phone, u.roleId, u.isActive, u.createdAt, r.roleName
@@ -42,7 +33,6 @@ const UserRepository = {
     return rows[0] || null;
   },
 
-  // 🟢 Tìm user theo email
   async findByEmail(email) {
     const sql = `SELECT * FROM User WHERE email = ?`;
     const [rows] = await pool.query(sql, [email]);
@@ -57,18 +47,16 @@ const UserRepository = {
     return rows[0].count > 0;
   },
 
-  // 🟢 Tạo user
   async create(user) {
     const sql = `
       INSERT INTO User (userId, name, email, phone, password, roleId, isActive)
-      VALUES (?, ?, ?, ?, ?, ?, TRUE)
+      VALUES (?, (?, ?, ?, ?, ?, TRUE)
     `;
     const values = [user.userId, user.name, user.email, user.phone, user.password, user.roleId || null];
     await pool.query(sql, values);
     return user.userId;
   },
 
-  // 🟡 Cập nhật mật khẩu
   async updatePassword(userId, hashedPassword) {
     const [result] = await pool.query(
       `UPDATE User SET password = ? WHERE userId = ?`,
@@ -77,7 +65,6 @@ const UserRepository = {
     return result.affectedRows > 0;
   },
 
-  // 🟡 Cập nhật thông tin user (không bao gồm password)
   async update(userId, data) {
     const fields = [];
     const values = [];
@@ -92,7 +79,14 @@ const UserRepository = {
     return result.affectedRows > 0;
   },
 
-  // 🔴 Vô hiệu hóa user
+  // ✅ ĐÃ THÊM: Hàm xử lý toggle status
+  async updateStatus(userId, isActive) {
+    const sql = `UPDATE User SET isActive = ? WHERE userId = ?`;
+    const [result] = await pool.query(sql, [isActive, userId]);
+    return result.affectedRows > 0;
+  },
+
+  // 🔴 Vô hiệu hóa user (Giữ lại cũng được, hoặc dùng updateStatus thay thế)
   async disable(userId) {
     const [result] = await pool.query(
       `UPDATE User SET isActive = FALSE WHERE userId = ?`,

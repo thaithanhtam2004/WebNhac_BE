@@ -25,7 +25,8 @@ router.put(
 router.get("/search/all", SongController.searchAll); 
 router.get("/all/latest", SongController.getSongByReleaseDate); 
 router.get("/singer/:singerId", SongController.getBySinger); 
-router.get("/genre/:genreId", SongController.getByGenre); 
+router.get("/genre/:genreId", SongController.getByGenre);
+router.get('/album/:albumId', SongController.getByAlbum); 
 router.get("/hotTrend", SongController.getHotTrend);
 router.get("/", SongController.getAll);
 router.get("/:id", SongController.getById); 
