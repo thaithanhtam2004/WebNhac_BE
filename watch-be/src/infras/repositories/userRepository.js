@@ -1,51 +1,28 @@
-// repositories/userRepository.js
 const pool = require("../db/connection").promise();
 
 const UserRepository = {
-  // 🟢 Lấy tất cả người dùng (kèm tên vai trò)
+  // 🟢 Lấy tất cả user
   async findAll() {
     const sql = `
-      SELECT 
-        u.userId,
-        u.name,
-        u.email,
-        u.phone,
-        u.roleId,
-        u.isActive,
-        u.createdAt,
-        r.roleName
-      FROM User u
-      LEFT JOIN Role r ON u.roleId = r.roleId
+      SELECT u.userId, u.name, u.email, u.phone, u.roleId, u.isActive, u.createdAt, r.roleName
+      FROM User u LEFT JOIN Role r ON u.roleId = r.roleId
       ORDER BY u.createdAt DESC
     `;
     const [rows] = await pool.query(sql);
     return rows;
   },
-
-  // 🟢 Tìm user theo ID (không gồm password)
-  async findById(userId) {
+  // 🟢 Tìm user theo email + role (dùng cho LOGIN)
+  async findByEmailWithRole(email) {
     const sql = `
       SELECT 
         u.userId,
         u.name,
         u.email,
+        u.password,
         u.phone,
         u.roleId,
         u.isActive,
-        u.createdAt,
         r.roleName
-      FROM User u
-      LEFT JOIN Role r ON u.roleId = r.roleId
-      WHERE u.userId = ?
-    `;
-    const [rows] = await pool.query(sql, [userId]);
-    return rows[0] || null;
-  },
-
-  // 🟢 Tìm user theo email (bao gồm password)
-  async findByEmail(email) {
-    const sql = `
-      SELECT u.*, r.roleName
       FROM User u
       LEFT JOIN Role r ON u.roleId = r.roleId
       WHERE u.email = ?
@@ -54,33 +31,49 @@ const UserRepository = {
     return rows[0] || null;
   },
 
-  // 🟢 Kiểm tra email tồn tại
+  // 🟢 Tìm user theo ID
+  async findById(userId) {
+    const sql = `
+      SELECT u.userId, u.name, u.email, u.phone, u.roleId, u.isActive, u.createdAt, r.roleName
+      FROM User u LEFT JOIN Role r ON u.roleId = r.roleId
+      WHERE u.userId = ?
+    `;
+    const [rows] = await pool.query(sql, [userId]);
+    return rows[0] || null;
+  },
+
+  // 🟢 Tìm user theo email
+  async findByEmail(email) {
+    const sql = `SELECT * FROM User WHERE email = ?`;
+    const [rows] = await pool.query(sql, [email]);
+    return rows[0] || null;
+  },
+
   async existsByEmail(email) {
-    const [rows] = await pool.query(`SELECT COUNT(*) AS count FROM User WHERE email = ?`, [email]);
+    const [rows] = await pool.query(
+      `SELECT COUNT(*) AS count FROM User WHERE email = ?`,
+      [email]
+    );
     return rows[0].count > 0;
   },
 
-  // 🟢 Tạo user mới
+  // 🟢 Tạo user
   async create(user) {
     const sql = `
-      INSERT INTO User (userId, name, email, phone, password, roleId)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO User (userId, name, email, phone, password, roleId, isActive)
+      VALUES (?, ?, ?, ?, ?, ?, TRUE)
     `;
-    const values = [
-      user.userId,
-      user.name,
-      user.email,
-      user.phone,
-      user.password,
-      user.roleId || null,
-    ];
+    const values = [user.userId, user.name, user.email, user.phone, user.password, user.roleId || null];
     await pool.query(sql, values);
     return user.userId;
   },
 
   // 🟡 Cập nhật mật khẩu
   async updatePassword(userId, hashedPassword) {
-    const [result] = await pool.query(`UPDATE User SET password = ? WHERE userId = ?`, [hashedPassword, userId]);
+    const [result] = await pool.query(
+      `UPDATE User SET password = ? WHERE userId = ?`,
+      [hashedPassword, userId]
+    );
     return result.affectedRows > 0;
   },
 
@@ -88,22 +81,11 @@ const UserRepository = {
   async update(userId, data) {
     const fields = [];
     const values = [];
-
-    if (data.name !== undefined) {
-      fields.push("name = ?");
-      values.push(data.name);
-    }
-    if (data.phone !== undefined) {
-      fields.push("phone = ?");
-      values.push(data.phone);
-    }
-    if (data.roleId !== undefined) {
-      fields.push("roleId = ?");
-      values.push(data.roleId);
-    }
+    if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
+    if (data.phone !== undefined) { fields.push("phone = ?"); values.push(data.phone); }
+    if (data.roleId !== undefined) { fields.push("roleId = ?"); values.push(data.roleId); }
 
     if (fields.length === 0) return false;
-
     values.push(userId);
     const sql = `UPDATE User SET ${fields.join(", ")} WHERE userId = ?`;
     const [result] = await pool.query(sql, values);
@@ -112,17 +94,21 @@ const UserRepository = {
 
   // 🔴 Vô hiệu hóa user
   async disable(userId) {
-    const [result] = await pool.query(`UPDATE User SET isActive = FALSE WHERE userId = ?`, [userId]);
+    const [result] = await pool.query(
+      `UPDATE User SET isActive = FALSE WHERE userId = ?`,
+      [userId]
+    );
     return result.affectedRows > 0;
   },
-
 
   // 🟢 Kích hoạt lại user
   async enable(userId) {
-    const [result] = await pool.query(`UPDATE User SET isActive = TRUE WHERE userId = ?`, [userId]);
+    const [result] = await pool.query(
+      `UPDATE User SET isActive = TRUE WHERE userId = ?`,
+      [userId]
+    );
     return result.affectedRows > 0;
   },
-
 };
 
 module.exports = UserRepository;

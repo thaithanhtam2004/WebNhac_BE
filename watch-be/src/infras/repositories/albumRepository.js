@@ -1,19 +1,18 @@
 const pool = require("../db/connection").promise();
 
 const AlbumRepository = {
-  // 🟢 Lấy tất cả album cùng thông tin ca sĩ
   async findAll() {
     const sql = `
       SELECT 
         a.albumId,
-        a.name,
-        a.singerId,
-        s.name AS singerName,
+        a.name AS title,
         a.coverUrl,
         a.description,
         a.totalViews,
         a.releaseDate,
-        a.createdAt
+        a.createdAt,
+        s.singerId,
+        s.name AS singerName
       FROM Album a
       LEFT JOIN Singer s ON a.singerId = s.singerId
       ORDER BY a.createdAt DESC
@@ -22,19 +21,17 @@ const AlbumRepository = {
     return rows;
   },
 
-  // 🟢 Lấy album theo ID
   async findById(albumId) {
     const sql = `
       SELECT 
         a.albumId,
-        a.name,
-        a.singerId,
-        s.name AS singerName,
+        a.name AS title,
         a.coverUrl,
         a.description,
         a.totalViews,
         a.releaseDate,
-        a.createdAt
+        a.createdAt,
+        s.name AS singerName
       FROM Album a
       LEFT JOIN Singer s ON a.singerId = s.singerId
       WHERE a.albumId = ?
@@ -43,62 +40,40 @@ const AlbumRepository = {
     return rows[0] || null;
   },
 
-  // 🟢 Lấy danh sách album theo ca sĩ
   async findBySingerId(singerId) {
     const sql = `
-      SELECT albumId, name, coverUrl, description, totalViews, releaseDate, createdAt
+      SELECT 
+        albumId,
+        name AS title,
+        coverUrl,
+        releaseDate
       FROM Album
       WHERE singerId = ?
-      ORDER BY createdAt DESC
+      ORDER BY releaseDate DESC
     `;
     const [rows] = await pool.query(sql, [singerId]);
     return rows;
   },
 
-  // 🟢 Tạo album mới
-  async create(album) {
+  // ✅ SEARCH ALBUM (QUAN TRỌNG)
+  async search(query) {
+    if (!query || query.trim() === "") return [];
+    const searchTerm = `%${query}%`;
+
     const sql = `
-      INSERT INTO Album (albumId, name, singerId, coverUrl, description, totalViews, releaseDate, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+      SELECT 
+        a.albumId,
+        a.name AS title,
+        a.coverUrl,
+        s.name AS singerName
+      FROM Album a
+      LEFT JOIN Singer s ON a.singerId = s.singerId
+      WHERE a.name LIKE ? OR s.name LIKE ?
+      LIMIT 5
     `;
-    const values = [
-      album.albumId,
-      album.name,
-      album.singerId,
-      album.coverUrl || null,
-      album.description || null,
-      album.totalViews || 0,
-      album.releaseDate || null,
-    ];
-    await pool.query(sql, values);
-    return album.albumId;
-  },
 
-  // 🟢 Cập nhật album
-  async update(albumId, data) {
-    const fields = [];
-    const values = [];
-
-    if (data.name !== undefined) { fields.push("name = ?"); values.push(data.name); }
-    if (data.singerId !== undefined) { fields.push("singerId = ?"); values.push(data.singerId); }
-    if (data.coverUrl !== undefined) { fields.push("coverUrl = ?"); values.push(data.coverUrl); }
-    if (data.description !== undefined) { fields.push("description = ?"); values.push(data.description); }
-    if (data.totalViews !== undefined) { fields.push("totalViews = ?"); values.push(data.totalViews); }
-    if (data.releaseDate !== undefined) { fields.push("releaseDate = ?"); values.push(data.releaseDate); }
-
-    if (fields.length === 0) return false;
-
-    const sql = `UPDATE Album SET ${fields.join(", ")} WHERE albumId = ?`;
-    values.push(albumId);
-
-    const [result] = await pool.query(sql, values);
-    return result.affectedRows > 0;
-  },
-
-  // 🟢 Xóa album
-  async delete(albumId) {
-    const [result] = await pool.query(`DELETE FROM Album WHERE albumId = ?`, [albumId]);
-    return result.affectedRows > 0;
+    const [rows] = await pool.query(sql, [searchTerm, searchTerm]);
+    return rows;
   },
 };
 
