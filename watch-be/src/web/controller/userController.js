@@ -2,18 +2,12 @@ const jwt = require("jsonwebtoken");
 const UserService = require("../../services/userService");
 
 class UserController {
-  // 🟢 Đăng ký
+  // Auth & CRUD cơ bản
   async register(req, res) {
     try {
       const result = await UserService.register(req.body);
-      res.status(201).json({
-        success: true,
-        message: result.message,
-        userId: result.userId,
-      });
-    } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
-    }
+      res.status(201).json({ success: true, ...result });
+    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
   }
   async login(req, res) {
     try {
@@ -43,68 +37,57 @@ class UserController {
     }
   }
 
-  // 🟢 Lấy tất cả user
   async getAll(req, res) {
     try {
       const users = await UserService.getAllUsers();
       res.status(200).json({ success: true, data: users });
-    } catch (err) {
-      res.status(500).json({ success: false, message: err.message });
-    }
+    } catch (err) { res.status(500).json({ success: false, message: err.message }); }
   }
 
-  // 🟢 Lấy user theo ID
   async getById(req, res) {
     try {
       const user = await UserService.getUserById(req.params.id);
       res.status(200).json({ success: true, data: user });
-    } catch (err) {
-      res.status(404).json({ success: false, message: err.message });
-    }
+    } catch (err) { res.status(404).json({ success: false, message: err.message }); }
   }
 
-  // 🟡 Cập nhật thông tin
   async update(req, res) {
     try {
       const result = await UserService.updateUser(req.params.id, req.body);
       res.status(200).json({ success: true, message: result.message });
-    } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
-    }
+    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
   }
 
-  // 🟡 Đổi mật khẩu
   async changePassword(req, res) {
     try {
       const result = await UserService.changePassword(req.params.id, req.body);
-      res.status(200).json({ success: true, message: result.message });
-    } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
-    }
+      res.status(200).json({ success: true, ...result });
+    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
   }
 
-  // 🔴 Vô hiệu hóa
+  // ==================== CÁC HÀM XỬ LÝ TRẠNG THÁI ====================
+
+  // 1️⃣ Toggle (Dùng cho Frontend Switch)
+  async updateStatus(req, res) {
+    try {
+      const { isActive } = req.body;
+      if (typeof isActive !== 'boolean') return res.status(400).json({ success: false, message: "isActive phải là boolean" });
+      
+      const result = await UserService.toggleUserStatus(req.params.id, isActive);
+      res.status(200).json({ success: true, message: result.message });
+    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
+  }
+
+  // 2️⃣ Vô hiệu hóa (Map với DELETE method - Soft Delete)
   async disable(req, res) {
     try {
-      const result = await UserService.disableUser(req.params.id);
-      res.status(200).json({ success: true, message: result.message });
-    } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
-    }
+      await UserService.toggleUserStatus(req.params.id, false); // False = Khóa
+      res.status(200).json({ success: true, message: "Đã vô hiệu hóa người dùng" });
+    } catch (err) { res.status(400).json({ success: false, message: err.message }); }
   }
 
-  // 🟢 Kích hoạt lại
+  // 3️⃣ Kích hoạt lại (Map với PATCH /enable)
   async enable(req, res) {
-    try {
-      const result = await UserService.enableUser(req.params.id);
-      res.status(200).json({ success: true, message: result.message });
-    } catch (err) {
-      res.status(400).json({ success: false, message: err.message });
-    }
-  }
-
-  // ✅ Toggle status (enable/disable)
-  async updateStatus(req, res) {
     try {
       const { isActive } = req.body;
       const userId = req.params.id;

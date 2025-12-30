@@ -29,14 +29,22 @@ const SongRepository = {
       WHERE s.songId = ?
     `;
     const [rows] = await pool.query(sql, [songId]);
-    const song = rows[0] || null;
+    return rows[0] || null;
+  },
 
-    if (song) {
-      console.log("🎵 Song found:", song.songId);
-      console.log("📝 Lyric:", song.lyric ? "Có lời" : "Không có lời");
+  // ✅ [MỚI] Kiểm tra trùng lặp (Cùng tên + Cùng ca sĩ)
+  // excludeSongId dùng khi update (để không tự so sánh với chính nó)
+  async checkDuplicate(title, singerId, excludeSongId = null) {
+    let sql = `SELECT songId FROM Song WHERE title = ? AND singerId = ?`;
+    const params = [title, singerId];
+
+    if (excludeSongId) {
+      sql += ` AND songId != ?`;
+      params.push(excludeSongId);
     }
 
-    return song;
+    const [rows] = await pool.query(sql, params);
+    return rows.length > 0; // Trả về true nếu đã tồn tại
   },
 
   // 🟢 Tăng lượt xem
@@ -51,20 +59,22 @@ const SongRepository = {
     const sql = `
       INSERT INTO Song (
         songId, title, duration, fileUrl, lyric, coverUrl, 
-        views, singerId, genreId, releaseDate, popularityScore
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        views, singerId, genreId, releaseDate, popularityScore, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `;
     const values = [
       song.songId, song.title, song.duration, song.fileUrl, song.lyric || null,
       song.coverUrl, song.views || 0, song.singerId, song.genreId,
       song.releaseDate || null, song.popularityScore || 0,
     ];
-    const [result] = await pool.query(sql, values);
+    await pool.query(sql, values);
     return song.songId;
   },
 
   // 🟢 Cập nhật bài hát
   async update(songId, data) {
+    // Chỉ cập nhật các trường có giá trị (Dynamic Update)
+    // Lưu ý: Code dưới đây giả định data chứa đầy đủ thông tin cần update như service truyền xuống
     const sql = `
       UPDATE Song
       SET title = ?, duration = ?, fileUrl = ?, lyric = ?, coverUrl = ?, 
@@ -98,7 +108,7 @@ const SongRepository = {
       FROM Song s
       LEFT JOIN Singer si ON s.singerId = si.singerId
       LEFT JOIN Genre g ON s.genreId = g.genreId
-      ORDER BY s.releaseDate ASC
+      ORDER BY s.releaseDate DESC
     `;
     const [rows] = await pool.query(sql);
     return rows;
@@ -116,45 +126,25 @@ const SongRepository = {
       FROM Song s
       LEFT JOIN Singer si ON s.singerId = si.singerId
       LEFT JOIN Genre g ON s.genreId = g.genreId
-      WHERE s.title LIKE ? OR si.name LIKE ? OR g.name LIKE ?
+      WHERE s.title LIKE ? OR si.name LIKE ?
       ORDER BY s.releaseDate DESC
     `;
-    const [rows] = await pool.query(sql, [searchTerm, searchTerm, searchTerm]);
+    const [rows] = await pool.query(sql, [searchTerm, searchTerm]);
     return rows;
   },
 
-  // 🟢 Tìm kiếm tất cả (bài hát + ca sĩ + thể loại)
+  // 🟢 Tìm kiếm tất cả
   async searchAll(query) {
     if (!query || query.trim() === '') return { songs: [], singers: [], genres: [] };
     const searchTerm = `%${query}%`;
 
     const songSql = `
-      SELECT 
-        s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
-        s.views, s.releaseDate,
-        si.singerId, si.name AS singerName,
-        g.genreId, g.name AS genreName
-      FROM Song s
-      LEFT JOIN Singer si ON s.singerId = si.singerId
-      LEFT JOIN Genre g ON s.genreId = g.genreId
-      WHERE s.title LIKE ?
-      ORDER BY s.views DESC
-      LIMIT 10
+      SELECT s.songId, s.title, s.coverUrl, s.fileUrl, si.name AS singerName 
+      FROM Song s LEFT JOIN Singer si ON s.singerId = si.singerId
+      WHERE s.title LIKE ? LIMIT 10
     `;
-
-    const singerSql = `
-      SELECT singerId, name, bio, imageUrl
-      FROM Singer
-      WHERE name LIKE ?
-      LIMIT 5
-    `;
-
-    const genreSql = `
-      SELECT genreId, name, description
-      FROM Genre
-      WHERE name LIKE ?
-      LIMIT 5
-    `;
+    const singerSql = `SELECT singerId, name, imageUrl FROM Singer WHERE name LIKE ? LIMIT 5`;
+    const genreSql = `SELECT genreId, name FROM Genre WHERE name LIKE ? LIMIT 5`;
 
     const [songs] = await pool.query(songSql, [searchTerm]);
     const [singers] = await pool.query(singerSql, [searchTerm]);
@@ -163,87 +153,37 @@ const SongRepository = {
     return { songs, singers, genres };
   },
 
-  // 🎵 Lấy bài hát theo ca sĩ
   async findBySingerId(singerId) {
-    const sql = `
-      SELECT 
-        s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
-        s.views, s.releaseDate,
-        si.singerId, si.name AS singerName,
-        g.genreId, g.name AS genreName
-      FROM Song s
-      LEFT JOIN Singer si ON s.singerId = si.singerId
-      LEFT JOIN Genre g ON s.genreId = g.genreId
-      WHERE s.singerId = ?
-      ORDER BY s.views DESC
-    `;
+    const sql = `SELECT * FROM Song WHERE singerId = ? ORDER BY views DESC`;
     const [rows] = await pool.query(sql, [singerId]);
     return rows;
   },
 
-  // 🎸 Lấy bài hát theo thể loại
   async findByGenreId(genreId) {
-    const sql = `
-      SELECT 
-        s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
-        s.views, s.releaseDate,
-        si.singerId, si.name AS singerName,
-        g.genreId, g.name AS genreName
-      FROM Song s
-      LEFT JOIN Singer si ON s.singerId = si.singerId
-      LEFT JOIN Genre g ON s.genreId = g.genreId
-      WHERE s.genreId = ?
-      ORDER BY s.views DESC
-    `;
+    const sql = `SELECT * FROM Song WHERE genreId = ? ORDER BY views DESC`;
     const [rows] = await pool.query(sql, [genreId]);
     return rows;
   },
 
-  // 🟢 Lấy tất cả bài hát, kèm flag hasFeature (1 nếu có trong SongFeature)
-async findAllWithFeature() {
-  const sql = `
-    SELECT 
-      s.songId,
-      s.title,
-      s.duration,
-      s.coverUrl,
-      s.fileUrl,
-      s.views,
-      s.releaseDate,
-      s.popularityScore,
-      si.singerId,
-      si.name AS singerName,
-      g.genreId,
-      g.name AS genreName,
-      CASE WHEN sf.songId IS NOT NULL THEN 1 ELSE 0 END AS hasFeature
-    FROM Song s
-    LEFT JOIN Singer si ON s.singerId = si.singerId
-    LEFT JOIN Genre g ON s.genreId = g.genreId
-    LEFT JOIN SongFeature sf ON s.songId = sf.songId
-    ORDER BY s.createdAt DESC
-  `;
-  const [rows] = await pool.query(sql);
-  return rows;
-},
+  async findAllWithFeature() {
+    const sql = `
+      SELECT s.*, CASE WHEN sf.songId IS NOT NULL THEN 1 ELSE 0 END AS hasFeature
+      FROM Song s LEFT JOIN SongFeature sf ON s.songId = sf.songId
+      ORDER BY s.createdAt DESC
+    `;
+    const [rows] = await pool.query(sql);
+    return rows;
+  },
 
-async findHotTrend(limit = 10) {
-  const sql = `
-    SELECT 
-      s.songId, s.title, s.duration, s.coverUrl, s.fileUrl,
-      s.views, s.releaseDate, s.popularityScore,
-      si.singerId, si.name AS singerName,
-      g.genreId, g.name AS genreName
-    FROM Song s
-    LEFT JOIN Singer si ON s.singerId = si.singerId
-    LEFT JOIN Genre g ON s.genreId = g.genreId
-    ORDER BY s.popularityScore DESC, s.releaseDate DESC
-    LIMIT ?
-  `;
-  const [rows] = await pool.query(sql, [limit]);
-  return rows;
-},
-
-
+  async findHotTrend(limit = 10) {
+    const sql = `
+      SELECT s.*, si.name AS singerName 
+      FROM Song s LEFT JOIN Singer si ON s.singerId = si.singerId
+      ORDER BY s.popularityScore DESC, s.releaseDate DESC LIMIT ?
+    `;
+    const [rows] = await pool.query(sql, [limit]);
+    return rows;
+  },
 };
 
 module.exports = SongRepository;

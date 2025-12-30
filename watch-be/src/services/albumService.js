@@ -2,32 +2,25 @@ const { ulid } = require("ulid");
 const cloudinary = require("../utils/config/cloudinary");
 const AlbumRepository = require("../infras/repositories/albumRepository");
 const SingerRepository = require("../infras/repositories/singerRepository");
-const AlbumSongRepository = require("../infras/repositories/albumSongRepository");
 
 const AlbumService = {
-  // 🟢 Lấy tất cả album
   async getAllAlbums() {
     return await AlbumRepository.findAll();
   },
 
-  // 🟢 Lấy chi tiết album kèm bài hát
   async getAlbumById(albumId) {
     const album = await AlbumRepository.findById(albumId);
     if (!album) throw new Error("Album không tồn tại");
-
-    const songs = await AlbumSongRepository.getSongsByAlbum(albumId);
-    return { ...album, songs };
+    return album;
   },
 
-  // 🟢 Lấy danh sách album theo ca sĩ
   async getAlbumsBySinger(singerId) {
     const singer = await SingerRepository.findById(singerId);
     if (!singer) throw new Error("Ca sĩ không tồn tại");
-
     return await AlbumRepository.findBySingerId(singerId);
   },
 
-  // 🟢 Upload ảnh bìa lên Cloudinary
+  // Helper upload ảnh
   async uploadCover(file) {
     if (!file) return null;
     try {
@@ -38,24 +31,34 @@ const AlbumService = {
       );
       return uploadRes.secure_url;
     } catch (err) {
-      console.error("❌ Lỗi upload Cloudinary:", err.message);
-      throw new Error("Không thể tải ảnh lên Cloudinary");
+      console.error("Cloudinary Error:", err);
+      throw new Error("Lỗi upload ảnh bìa");
     }
   },
 
-  // 🟢 Tạo album mới
+  // 🟢 Tạo Album (Có validate trùng lặp)
   async createAlbum(data, file) {
     if (!data.name?.trim()) throw new Error("Tên album không được để trống");
+    if (!data.singerId) throw new Error("Vui lòng chọn ca sĩ");
 
+    const cleanName = data.name.trim();
+
+    // 1. Kiểm tra Ca sĩ tồn tại
     const singer = await SingerRepository.findById(data.singerId);
     if (!singer) throw new Error("Ca sĩ không tồn tại");
 
-    const coverUrl = await this.uploadCover(file);
+    // 2. Kiểm tra Trùng lặp (Tên album + Ca sĩ)
+    const isDuplicate = await AlbumRepository.checkDuplicate(cleanName, data.singerId);
+    if (isDuplicate) {
+      throw new Error(`Ca sĩ này đã có album tên '${cleanName}'.`);
+    }
 
+    const coverUrl = await this.uploadCover(file);
     const albumId = ulid();
+
     await AlbumRepository.create({
       albumId,
-      name: data.name.trim(),
+      name: cleanName,
       singerId: data.singerId,
       coverUrl,
       description: data.description || null,
@@ -66,33 +69,57 @@ const AlbumService = {
     return { message: "Tạo album thành công", albumId };
   },
 
-  // 🟢 Cập nhật album
+  // 🟡 Cập nhật Album
   async updateAlbum(albumId, data, file) {
-    const album = await AlbumRepository.findById(albumId);
-    if (!album) throw new Error("Album không tồn tại");
+    const existing = await AlbumRepository.findById(albumId);
+    if (!existing) throw new Error("Album không tồn tại");
 
-    if (data.singerId) {
-      const singer = await SingerRepository.findById(data.singerId);
-      if (!singer) throw new Error("Ca sĩ không tồn tại");
-    }
+    const updateData = {};
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.releaseDate !== undefined) updateData.releaseDate = data.releaseDate;
 
+    // Check nếu có upload ảnh mới
     if (file) {
-      data.coverUrl = await this.uploadCover(file);
+      updateData.coverUrl = await this.uploadCover(file);
     }
 
-    const success = await AlbumRepository.update(albumId, data);
-    if (!success) throw new Error("Cập nhật album thất bại");
+    // Logic kiểm tra Tên và Ca sĩ mới
+    const newName = data.name ? data.name.trim() : existing.name;
+    const newSingerId = data.singerId || existing.singerId;
+
+    if (newName !== existing.name || newSingerId !== existing.singerId) {
+      // Nếu đổi ca sĩ -> Check ca sĩ tồn tại
+      if (newSingerId !== existing.singerId) {
+        const singer = await SingerRepository.findById(newSingerId);
+        if (!singer) throw new Error("Ca sĩ mới không tồn tại");
+      }
+
+      // Check trùng lặp
+      const isDuplicate = await AlbumRepository.checkDuplicate(newName, newSingerId, albumId);
+      if (isDuplicate) {
+        throw new Error(`Cập nhật thất bại: Ca sĩ này đã có album '${newName}'.`);
+      }
+
+      updateData.name = newName;
+      updateData.singerId = newSingerId;
+    }
+
+    const success = await AlbumRepository.update(albumId, updateData);
+    if (!success) throw new Error("Cập nhật thất bại");
 
     return { message: "Cập nhật album thành công" };
   },
 
-  // 🟢 Xóa album (và toàn bộ bài hát liên kết)
+  // 🔴 Xóa Album (Có ràng buộc)
   async deleteAlbum(albumId) {
     const album = await AlbumRepository.findById(albumId);
     if (!album) throw new Error("Album không tồn tại");
 
-    // Xóa tất cả liên kết trong AlbumSong
-    await AlbumSongRepository.updateAlbumSongs(albumId, []);
+    // 1. Kiểm tra xem album có chứa bài hát nào không
+    const hasSongs = await AlbumRepository.hasSongs(albumId);
+    if (hasSongs) {
+      throw new Error(`Không thể xóa album '${album.name}' vì đang chứa bài hát.`);
+    }
 
     const success = await AlbumRepository.delete(albumId);
     if (!success) throw new Error("Xóa album thất bại");
