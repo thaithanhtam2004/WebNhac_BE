@@ -50,7 +50,7 @@ const UserRepository = {
   async create(user) {
     const sql = `
       INSERT INTO User (userId, name, email, phone, password, roleId, isActive)
-      VALUES (?, (?, ?, ?, ?, ?, TRUE)
+      VALUES (?, ?, ?, ?, ?, ?, TRUE)
     `;
     const values = [user.userId, user.name, user.email, user.phone, user.password, user.roleId || null];
     await pool.query(sql, values);
