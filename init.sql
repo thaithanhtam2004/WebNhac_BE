@@ -1,0 +1,552 @@
+-- MySQL dump 10.13  Distrib 8.0.46, for Linux (x86_64)
+--
+-- Host: host.docker.internal    Database: musicweb
+-- ------------------------------------------------------
+-- Server version	8.0.46
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Current Database: `musicweb`
+--
+
+/*!40000 DROP DATABASE IF EXISTS `musicweb`*/;
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `musicweb` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+USE `musicweb`;
+
+--
+-- Table structure for table `album`
+--
+
+DROP TABLE IF EXISTS `album`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `album` (
+  `albumId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `singerId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `coverUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `releaseDate` datetime DEFAULT NULL,
+  `totalViews` int DEFAULT '0',
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`albumId`),
+  KEY `singerId` (`singerId`),
+  CONSTRAINT `Album_ibfk_1` FOREIGN KEY (`singerId`) REFERENCES `singer` (`singerId`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `album`
+--
+
+LOCK TABLES `album` WRITE;
+/*!40000 ALTER TABLE `album` DISABLE KEYS */;
+INSERT INTO `album` VALUES ('01KDMKBDQCAYCV8FZGQ9NA68ST','The Wrxdies','01KDMJQA28RQMGB5FJWA1XKY32','https://res.cloudinary.com/dsmbpvjng/image/upload/v1766996686/albums/gpquludub3sat5ogi3kh.jpg','Bữa tiệc âm nhạc cuối năm 2024 ngày càng sôi động hơn khi xuất hiện một album đến từ nghệ sĩ Hip-hop với những bài hát cực “căng” mang tên “THE WXRDIES”. Wxrdie đã ngày càng khẳng định vị thế của mình trong hành trình âm nhạc với tư duy làm nhạc nghiêm túc, chỉn chu.\r\n\r\n24 tracks của album là hành trình theo đuổi đam mê của Wxrdie. Con đường đó có thể chứa đựng đầy mồ hôi, nước mắt và cả nỗi đau, nhưng tất cả đều xứng đáng vì nó tạo nên một Wxrdie của hiện tại. Mỗi bài hát trong album đều mang đến một câu chuyện riêng với những khám phá sâu trong nội tâm của anh. Bằng chính những chất liệu rất “đời” xoay quanh gia đình – anh em – bạn bè và Hà Nội, những ca khúc của Wxrdie như đang xoáy sâu vào chính tâm tưởng, góc nhìn của mỗi người.','2024-01-01 00:00:00',0,'2025-12-29 15:24:46'),('01KDMMXEGK3ABFEZFDVY94MV5M','99%','01KDMJQT391NDZTY8ESEE1PJQW',NULL,'99% là album phòng thu đầu tay của RPT MCK, với chủ đề chính là về người yêu cũ và những mối quan hệ đã tan vỡ của nam rapper trong những năm vừa qua.\r\n\r\nAlbum chứa 13 bài hát thuộc nhiều thể loại, xen kẽ giữa chúng là 3 phần interlude là cuộc hội thoại của MCK với Lope Phạm – producer của album và Hiếu Marlin – quản lí của nam rapper. Đa số các bài hát là pop R&B và Hiphop, vốn là những sở trường của MCK.','2023-01-01 00:00:00',0,'2025-12-29 15:52:05'),('01KDMMZ5F9K2D25K022VKHH8RQ','Cho Bảo','01KDMJZMVM6MC060H1H4MN0ZPW',NULL,NULL,'2025-01-01 00:00:00',0,'2025-12-29 15:53:02'),('01KDMN04Q1VPY4Z2AZPKWEKPG2','An','01KDMK53S9P0XNA5NBDMAVABAE',NULL,NULL,'2024-01-01 00:00:00',0,'2025-12-29 15:53:34'),('01KDMN17KDK2G86QM87TWQCPC0','Đánh đổi','01KDMK2DCAWTB4BMRAX365MFWR',NULL,NULL,'2023-01-01 00:00:00',0,'2025-12-29 15:54:09'),('01KDQ1T10BE61K4EJTT09MDE11','Nét','01KDMWKVQCDMACZ41SFZR1E9KA',NULL,NULL,'2025-01-01 00:00:00',0,'2025-12-30 14:15:54');
+/*!40000 ALTER TABLE `album` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `albumsong`
+--
+
+DROP TABLE IF EXISTS `albumsong`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `albumsong` (
+  `albumId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `trackNumber` int DEFAULT NULL,
+  PRIMARY KEY (`albumId`,`songId`),
+  KEY `songId` (`songId`),
+  CONSTRAINT `AlbumSong_ibfk_1` FOREIGN KEY (`albumId`) REFERENCES `album` (`albumId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `AlbumSong_ibfk_2` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `albumsong`
+--
+
+LOCK TABLES `albumsong` WRITE;
+/*!40000 ALTER TABLE `albumsong` DISABLE KEYS */;
+INSERT INTO `albumsong` VALUES ('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXCGB5HS2XTAEK7PQVCQ2',22),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXDSHTH6P57D3ETEN0MTA',21),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXFMMPAP2NSDHXFZ0X70K',20),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXHKTM32GWAYF6RWW6BK0',19),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXJQZYX7PT7QR0YY4XYJ2',18),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXM32ES2YM26SBZF7D5T2',17),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXN5F5JEA7DSPXARPAGX9',16),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXPWAGSBM3G9ZWXM5YDVA',15),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXR7MJR7E1E0PHSPRQYVM',14),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXSBEK1JN51SARM9G1QEM',13),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXTRR67KZGCX6FB9MYCMZ',12),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXVQB0KMJ0MWQK8MC8357',11),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXWRNHWTRVZVXJ5T0TKZN',10),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXXSWZ8PKE02STBK2HSGC',9),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQXZM4E1BNZYKYDH73N0B2',8),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQY0S797GZDDHWN074TBKY',7),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQY2W47A8G8RNY2VKES6CP',6),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQY3Z1D4S51MN0XBYSMX88',5),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQY597GJ1C1JQEQSSGE3G5',4),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQY6MGNR4MYWMD9DYWBAGD',3),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMQY8B3VYXZGF3R1ERY2NQ9',2),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMR3CJ6THKDNFZDJ3245N9Z',1),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMRAASYNXK9Y5MBX4KK0660',1),('01KDMKBDQCAYCV8FZGQ9NA68ST','01KDMRAC1GT9PDQ01FTFXEP485',2),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSC7XXCJ7BV0K2J3WXP92Z',1),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSC9N0HXK642VCHXQD49EQ',2),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCB4MYYMS5EDEXP4W6HZN',3),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCC3JN0KCPHXGGJVRFKGC',4),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCDNFCFCKAEVVY2ZPYWN0',5),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCERVGAA0TX4KC0ZV32F5',6),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCFVHZAFKVRMASVDEBNSZ',16),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCH0N5CRSD3QWZM0GM26A',15),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCJ42E704SHY8X9RHKMH1',14),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCK7ZGA2V9SBJQ1N29SRY',13),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCMMG5QVWMGWFWGGSZK78',12),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCNK5C31T32263932RXVE',11),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCPMA0YGM09JEB8NMWA19',10),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCQTJV3MJKCKG5RG3X4G6',9),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCRSS1NMR5N9EHV1ZQWQH',8),('01KDMMXEGK3ABFEZFDVY94MV5M','01KDMSCT09AXG5JVN9NXP8KYXH',7),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNV65BY9MXGQP16CHYP7NA',1),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNV7X7KGFPWV5ENYZWT8VT',2),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNV90Y4G6YQFHT7YPRGTMY',3),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVA50927DNCF7WJZJWY5Y',4),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVBCK69SAWDZAKKQCT3J8',5),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVCW43SHH782RZ79C468P',6),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVDTXWV4X389M0TWG1CQJ',7),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVG8HX2J2YRPBSG9STVED',8),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVHMM4XKJMSE9AXMTWCR0',9),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVK3ENC23CA518MJ93QYJ',10),('01KDMMZ5F9K2D25K022VKHH8RQ','01KDMNVMD0TEEPS1AMFV67CKK4',11),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRT1VPJHV10JM08WZQHCV7',1),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRT4CZ9W2G313VPBQSMFR0',2),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRT5PNG0EA8TJ1TR7KPN3J',3),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRT70BNKFMBKJWQJ0KWD61',4),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRT8AX6NRAZ1M5E6R4CB5C',5),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRT9BEJ1GC9ZEHDTMJM3Z5',6),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRTABWTBBBQAAFPY84Y4T7',7),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRTBCW3Y05F6MTYEE16CDF',8),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRTDQHNX3AASW3MG274NFR',9),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRTF8Q6NF4RV71EYVZ4J0E',10),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRTGK0505ZYHXNE0REB883',11),('01KDMN04Q1VPY4Z2AZPKWEKPG2','01KDMRTHNCQ6M56Z34X5WD0NM4',12),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAJS33XSVKMJE2NPMP6VW',20),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAM0MMXBX6HVYMGQWB9M0',19),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAN2A58168TXFFNZTSHZX',18),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTANX6WGPHPGV8Y6FA7TKA',17),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAQMG38PV99T965HY9WRT',16),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAS4Y2X8BP0NEGMBWFZRW',15),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAT0KCHFBDDWAYY9TG276',14),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAVNZ7X1Q410P2K7T8SND',13),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAWFN66B9T5FXD83KSZ7P',12),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAX9ETQ06HSK7N767PWT2',11),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAYK666ANR1YV75PRX61Q',3),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTAZMAPT6S5XBD9DCP0TV9',10),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB0RVPF8T6BDYFZDSR9AP',9),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB1YX49MPXE0KDFBPB4ZH',8),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB384VEENTMCT8W370A9S',7),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB4DW4J65WZN0BNYQYH4P',6),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB61A221QYPFSKE4G7JAJ',5),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB7355G08ED5GAPF58AG3',4),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB84G1AYMT8S73T5Q256P',2),('01KDMN17KDK2G86QM87TWQCPC0','01KDMTB96KG41C12CWPZNYFDJ0',1);
+/*!40000 ALTER TABLE `albumsong` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `emotion`
+--
+
+DROP TABLE IF EXISTS `emotion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `emotion` (
+  `emotionId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`emotionId`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `emotion`
+--
+
+LOCK TABLES `emotion` WRITE;
+/*!40000 ALTER TABLE `emotion` DISABLE KEYS */;
+INSERT INTO `emotion` VALUES ('EMO001','happy','Âm nhạc tươi sáng, năng lượng tích cực, thường dùng khi có tâm trạng tốt.','2025-10-30 10:46:11'),('EMO002','sad','Nhạc nhẹ, sâu lắng, thường gợi nhớ hoặc đồng cảm với nỗi buồn.','2025-10-30 10:46:11'),('EMO003','energetic','Nhạc mạnh mẽ, tiết tấu nhanh, tạo cảm giác hứng khởi, nhiệt huyết.','2025-10-30 10:46:11'),('EMO004','chill','Nhạc êm dịu, giai điệu chậm, giúp thư giãn tinh thần và gợi cảm xúc ngọt ngào.','2025-10-30 10:46:11');
+/*!40000 ALTER TABLE `emotion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `favorite`
+--
+
+DROP TABLE IF EXISTS `favorite`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `favorite` (
+  `userId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userId`,`songId`),
+  KEY `songId` (`songId`),
+  CONSTRAINT `Favorite_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `Favorite_ibfk_2` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `favorite`
+--
+
+LOCK TABLES `favorite` WRITE;
+/*!40000 ALTER TABLE `favorite` DISABLE KEYS */;
+INSERT INTO `favorite` VALUES ('01KD3N0BRKJKDBPJN1212B2MGR','01KDMNV65BY9MXGQP16CHYP7NA','2025-12-30 17:28:54'),('01KD3N0BRKJKDBPJN1212B2MGR','01KDMNV7X7KGFPWV5ENYZWT8VT','2025-12-30 17:29:19'),('01KD3N0BRKJKDBPJN1212B2MGR','01KDMNVBCK69SAWDZAKKQCT3J8','2025-12-30 15:13:30'),('01KDQRNA399RXFTGRCGVGDSX3R','01KDMNV65BY9MXGQP16CHYP7NA','2025-12-31 00:39:05'),('01KDQRNA399RXFTGRCGVGDSX3R','01KDMQXXSWZ8PKE02STBK2HSGC','2025-12-31 00:17:52'),('admin-id','01KDMWZ68PSJKN5TZS19X55RAR','2026-01-31 17:08:07');
+/*!40000 ALTER TABLE `favorite` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `genre`
+--
+
+DROP TABLE IF EXISTS `genre`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `genre` (
+  `genreId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  PRIMARY KEY (`genreId`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `genre`
+--
+
+LOCK TABLES `genre` WRITE;
+/*!40000 ALTER TABLE `genre` DISABLE KEYS */;
+INSERT INTO `genre` VALUES ('01KDMN31X9TDWACFSFB9MTK461','Pop',NULL),('01KDMN38E5WHKYGZ9C651HMHS3','R&B',NULL),('01KDMN448A1TAWF4X8G4EN9P1G','Hiphop/Rap',NULL),('01KDMN7810KQBW935FH0X91WK0','Lo-fi',NULL),('01KDMSDV6PSVV1JZ8097DW2YG4','Ballad','Nhẹ nhàng, sâu lắng, chạm đến cảm xúc.'),('01KDMSEHHV0504NMWSWNF3W8W4','Indie/Underground','Phát triển mạnh trong giới trẻ yêu thích sự độc lập, sáng tạo.');
+/*!40000 ALTER TABLE `genre` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `history`
+--
+
+DROP TABLE IF EXISTS `history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `history` (
+  `userId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `listenCount` int DEFAULT '0',
+  `firstListenedAt` datetime DEFAULT NULL,
+  `lastListenedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`userId`,`songId`),
+  KEY `songId` (`songId`),
+  CONSTRAINT `History_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `History_ibfk_2` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `history`
+--
+
+LOCK TABLES `history` WRITE;
+/*!40000 ALTER TABLE `history` DISABLE KEYS */;
+INSERT INTO `history` VALUES ('01KD3N0BRKJKDBPJN1212B2MGR','01KDMNV65BY9MXGQP16CHYP7NA',7,'2025-12-30 15:56:28','2025-12-30 17:52:10'),('01KD3N0BRKJKDBPJN1212B2MGR','01KDMNV7X7KGFPWV5ENYZWT8VT',2,'2025-12-30 17:46:25','2025-12-30 17:51:39'),('01KD3N0BRKJKDBPJN1212B2MGR','01KDMNVBCK69SAWDZAKKQCT3J8',2,'2025-12-30 13:59:56','2025-12-30 16:12:37'),('01KD3N0BRKJKDBPJN1212B2MGR','01KDMQXFMMPAP2NSDHXFZ0X70K',1,'2025-12-30 18:03:40','2025-12-30 18:03:40'),('01KD3N0BRKJKDBPJN1212B2MGR','01KDMW2KZ819JXKMWKDQCX774J',2,'2025-12-30 17:51:55','2025-12-30 18:10:23'),('01KDQRNA399RXFTGRCGVGDSX3R','01KDMQXCGB5HS2XTAEK7PQVCQ2',1,'2025-12-31 00:21:53','2025-12-31 00:21:53'),('01KDQRNA399RXFTGRCGVGDSX3R','01KDMWHPE82ZTCCBM0V50QYFP4',1,'2025-12-31 00:20:13','2025-12-31 00:20:13'),('admin-id','01KDMQXHKTM32GWAYF6RWW6BK0',1,'2026-01-31 16:51:59','2026-01-31 16:51:59'),('admin-id','01KDMQY2W47A8G8RNY2VKES6CP',1,'2026-01-31 17:54:25','2026-01-31 17:54:25'),('admin-id','01KDMR3CJ6THKDNFZDJ3245N9Z',1,'2026-06-18 23:33:12','2026-06-18 23:33:12'),('admin-id','01KDMSCK7ZGA2V9SBJQ1N29SRY',1,'2026-01-31 17:47:52','2026-01-31 17:47:52'),('admin-id','01KDMSCMMG5QVWMGWFWGGSZK78',1,'2026-01-26 18:52:35','2026-01-26 18:52:35'),('admin-id','01KDMTAN2A58168TXFFNZTSHZX',1,'2026-01-31 17:55:09','2026-01-31 17:55:09'),('admin-id','01KDMTAYK666ANR1YV75PRX61Q',1,'2026-01-31 17:52:53','2026-01-31 17:52:53'),('admin-id','01KDMWHM2QM41CM6SSJWT4X439',3,'2026-01-28 13:52:48','2026-01-31 17:35:26'),('admin-id','01KDMWHSDQTKXKNSBGHSG38QJ9',1,'2026-01-31 17:49:19','2026-01-31 17:49:19');
+/*!40000 ALTER TABLE `history` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `playlist`
+--
+
+DROP TABLE IF EXISTS `playlist`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `playlist` (
+  `playlistId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `userId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`playlistId`),
+  KEY `userId` (`userId`),
+  CONSTRAINT `Playlist_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `playlist`
+--
+
+LOCK TABLES `playlist` WRITE;
+/*!40000 ALTER TABLE `playlist` DISABLE KEYS */;
+INSERT INTO `playlist` VALUES ('01KA568N5G8RVRSZHZV41537ZG','dnv ','01K9PASK9P79R0FGFGN934NB65','2025-11-16 09:00:22'),('01KDQ4E3FJGM6MDP9322HX3815','123','01KD3N0BRKJKDBPJN1212B2MGR','2025-12-30 15:01:49'),('01KDQ606WGHT131PH2KEK0M08M','1234','01KD3N0BRKJKDBPJN1212B2MGR','2025-12-30 15:29:10'),('01KDR496QBD6MV9M5J4BDJYYBX','123','01KDQRNA399RXFTGRCGVGDSX3R','2025-12-31 00:18:22'),('01KDR61ENXVCPZN4PK6EW8S1DD','234','01KDQRNA399RXFTGRCGVGDSX3R','2025-12-31 00:49:06'),('01KDR6F79ZE0GVVFZSYB2253PW','12345','01KDQRNA399RXFTGRCGVGDSX3R','2025-12-31 00:56:37'),('01KDR6G824K4CE1QF3HMT5V9KD','trong','01KDQRNA399RXFTGRCGVGDSX3R','2025-12-31 00:57:10'),('01KDR6JX2ETJPZDH4VT60MZCR0','ea','01KDQRNA399RXFTGRCGVGDSX3R','2025-12-31 00:58:37'),('01KDR6T23C04G9GHZ8E461HY4X','hgha','01KDQRNA399RXFTGRCGVGDSX3R','2025-12-31 01:02:32'),('01KFX2DS405DTM6CE2B481T2QJ','123','admin-id','2026-01-26 18:53:31');
+/*!40000 ALTER TABLE `playlist` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `playlistsong`
+--
+
+DROP TABLE IF EXISTS `playlistsong`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `playlistsong` (
+  `playlistId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`playlistId`,`songId`),
+  KEY `songId` (`songId`),
+  CONSTRAINT `PlaylistSong_ibfk_1` FOREIGN KEY (`playlistId`) REFERENCES `playlist` (`playlistId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `PlaylistSong_ibfk_2` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `playlistsong`
+--
+
+LOCK TABLES `playlistsong` WRITE;
+/*!40000 ALTER TABLE `playlistsong` DISABLE KEYS */;
+INSERT INTO `playlistsong` VALUES ('01KDQ4E3FJGM6MDP9322HX3815','01KDMNV65BY9MXGQP16CHYP7NA'),('01KDR496QBD6MV9M5J4BDJYYBX','01KDMNV65BY9MXGQP16CHYP7NA'),('01KDR6G824K4CE1QF3HMT5V9KD','01KDMNV65BY9MXGQP16CHYP7NA'),('01KDQ606WGHT131PH2KEK0M08M','01KDMNV7X7KGFPWV5ENYZWT8VT'),('01KDR496QBD6MV9M5J4BDJYYBX','01KDMNV7X7KGFPWV5ENYZWT8VT'),('01KDR61ENXVCPZN4PK6EW8S1DD','01KDMNV7X7KGFPWV5ENYZWT8VT'),('01KDR6F79ZE0GVVFZSYB2253PW','01KDMNV7X7KGFPWV5ENYZWT8VT'),('01KDR6JX2ETJPZDH4VT60MZCR0','01KDMNV7X7KGFPWV5ENYZWT8VT'),('01KDR6T23C04G9GHZ8E461HY4X','01KDMNV7X7KGFPWV5ENYZWT8VT'),('01KDQ4E3FJGM6MDP9322HX3815','01KDMNV90Y4G6YQFHT7YPRGTMY'),('01KDQ4E3FJGM6MDP9322HX3815','01KDMNVA50927DNCF7WJZJWY5Y'),('01KDQ4E3FJGM6MDP9322HX3815','01KDMNVBCK69SAWDZAKKQCT3J8'),('01KDR496QBD6MV9M5J4BDJYYBX','01KDMQXCGB5HS2XTAEK7PQVCQ2'),('01KDR496QBD6MV9M5J4BDJYYBX','01KDMWZ56VAFACS40JAJY22G2J'),('01KFX2DS405DTM6CE2B481T2QJ','01KDMWZF85CT658171PW4CE012');
+/*!40000 ALTER TABLE `playlistsong` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `role`
+--
+
+DROP TABLE IF EXISTS `role`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `role` (
+  `roleId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `roleName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`roleId`),
+  UNIQUE KEY `roleName` (`roleName`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `role`
+--
+
+LOCK TABLES `role` WRITE;
+/*!40000 ALTER TABLE `role` DISABLE KEYS */;
+INSERT INTO `role` VALUES ('1','user','Người dùng thường','2025-12-30 19:16:25'),('2','admin','Quản trị viên','2025-12-30 19:16:25');
+/*!40000 ALTER TABLE `role` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `singer`
+--
+
+DROP TABLE IF EXISTS `singer`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `singer` (
+  `singerId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `bio` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `imageUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`singerId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `singer`
+--
+
+LOCK TABLES `singer` WRITE;
+/*!40000 ALTER TABLE `singer` DISABLE KEYS */;
+INSERT INTO `singer` VALUES ('01KDMJQA28RQMGB5FJWA1XKY32','Wxrdie','Wxrdie tên thật Phạm Nam Hải (sinh ngày 10 tháng 2 năm 2000), là một nam rapper trẻ đang lên. Hiện tại, Wxrdie đang là một nhân tố đầy triển vọng trong nhóm YoungFlames cũng như 84GRND Label. Trước đây anh từng là học trò của MC ILL và từng là thành viên của RVP.','https://res.cloudinary.com/dsmbpvjng/image/upload/v1766996140/singers/b3btilrdjftebkoq2tdb.jpg'),('01KDMJQT391NDZTY8ESEE1PJQW','RPT MCK','Nghiêm Vũ Hoàng Long (sinh ngày 2 tháng 3 năm 1999), thường được biết đến với nghệ danh MCK, là một nam rapper và ca sĩ kiêm sáng tác nhạc người Việt Nam. Năm 2020, anh trở nên nổi tiếng khi tham dự và đi tới vòng chung kết ở mùa đầu tiên của cuộc thi truyền hình Rap Việt.','https://res.cloudinary.com/dsmbpvjng/image/upload/v1766996188/singers/jyngtulho3lah2orptcs.jpg'),('01KDMJZMVM6MC060H1H4MN0ZPW','B Ray','Trần Thiện Thanh Bảo (sinh ngày 11 tháng 10 năm 1993), thường được biết đến với nghệ danh B Ray, là một nam rapper, nhạc sĩ người Việt Nam. Anh từng được đề cử 1 giải Cống hiến cho &quot;Bài hát của năm&quot;.\r\nB Ray sinh ra tại Thành phố Hồ Chí Minh, từ nhỏ cùng gia đình đến sinh sống tại Mỹ. Anh theo học ngành dược và làm y tá ở Mỹ. Khi lớn lên, anh trở về Việt Nam để theo con đường âm nhạc.\r\n\r\nAnh bắt đầu làm nhạc rap từ năm 14 tuổi. Lúc học cấp 3, anh được một số bạn bè chỉ cách rap. Thời điểm đó, anh chỉ rap tiếng Anh. Vài năm sau, do bất đồng trong ngôn ngữ, đến khoảng cuối năm 2012, anh chuyển sang viết rap bằng tiếng Việt. Từ năm 2013, anh dần được cộng đồng underground ở Việt Nam biết đến.','https://res.cloudinary.com/dsmbpvjng/image/upload/v1766996300/singers/xvmxia7aes66hkboaaox.jpg'),('01KDMK2DCAWTB4BMRAX365MFWR','Obito','Obito tên thật là Lý Quốc Phong sinh năm 2001, anh là một rapper trẻ thuộc nhóm nhạc OTĐ (Original Tây Đô) và từng tham gia chương trình Rap Việt.\r\n\r\nDù tuổi đời còn trẻ, Obito đã nhanh chóng gây tiếng vang trên cộng đồng mạng nhờ bản hit Simple Love, hợp tác cùng thành viên Seachains. Với hàng triệu lượt view, Obito đã trở thành một trong những gương mặt được chú ý nhất trong làng rap miền Tây.','https://res.cloudinary.com/dsmbpvjng/image/upload/v1766996391/singers/opj2q4airoh6xoaghuzf.jpg'),('01KDMK53S9P0XNA5NBDMAVABAE','Lil Wuyn','Lil Wuyn tên thật là Trần Trung Hiếu sinh năm 1995, anh là một rapper tài năng đến từ nhóm nhạc 95Generation (95G) nổi tiếng tại TP Hồ Chí Minh.\r\n\r\nAnh là một cái tên quen thuộc trong làng rap Việt Nam, với phong cách rap riêng biệt và cá tính mạnh mẽ. Bên cạnh hoạt động trong nhóm 95G, Lil Wuyn cũng đã đạt được nhiều thành công trong sự nghiệp solo của mình.','https://res.cloudinary.com/dsmbpvjng/image/upload/v1766996479/singers/yifdq8zobvdmlqa4r3ij.jpg'),('01KDMV1XBM3P8NG9ED2HFF6MYH','7dnight','',NULL),('01KDMV2XX10P6XBBYB7NW4RHD4','Bích Phương','',NULL),('01KDMV3KB0FPEN8TMSWQSEXVAR','BSL Yung Ni99','',NULL),('01KDMV4E6CNKYH9QMZK77P0CP9','Bigdaddy','',NULL),('01KDMV4P7VTVQ3XBA4E81HJNKD','Phan Mạnh Quỳnh','',NULL),('01KDMV5BDSV7T15H9GHXTDDT10','Betekar','',NULL),('01KDMV5TX2ZXDPJT2S50Y6Y1BQ','Sơn Tùng M-TP','',NULL),('01KDMV6P8381ZNCZP4SEGCCAEZ','Don Toliver','',NULL),('01KDMV6Y6VYSF5NVXWZWD7R0WM','Lithe','',NULL),('01KDMVQ7YTZK65Q9H3NAS6B0V9','Lê Bảo Bình','',NULL),('01KDMVQGPKEKEBAZ5T5NX5W905','Trịnh Đình Quang','',NULL),('01KDMVRMG9G4R1C1476YJT5PMH','J97','',NULL),('01KDMVSK9J6G0984QSPWE8W6YB','Hoàng Thùy Linh','',NULL),('01KDMVT4CAJ0M9HCF35XNFJYT4','Hoàng Tôn','',NULL),('01KDMW4EF55AAZGBG7E3SRM5FW','Central Cee','',NULL),('01KDMW5383R397YKS8F4C105PX','Khắc Việt','',NULL),('01KDMW57T8ADX3V2FGRXM2V4GK','Kiddi','',NULL),('01KDMW5DM7P32AV0507XP92GSA','Kidsai','',NULL),('01KDMW68KM1ECYZ42JHA3NKHHR','Lil Tecca','',NULL),('01KDMW6ERV3P2F46R7NRN74GE2','Xoxad','',NULL),('01KDMW6W2R0E9VV1MCAF4Z3S5B','Vsoul','',NULL),('01KDMWJK9TCRR72RPT6P3YH5G0','Mr.T','',NULL),('01KDMWKNXEQM38A1YX7BENZFQH','Đen','',NULL),('01KDMWKVQCDMACZ41SFZR1E9KA','Low G','',NULL),('01KDMX0MEVGHBZWP4WW3Y2EP6K','Anh Phan','',NULL);
+/*!40000 ALTER TABLE `singer` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `song`
+--
+
+DROP TABLE IF EXISTS `song`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `song` (
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `duration` int DEFAULT NULL,
+  `fileUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `lyric` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `coverUrl` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `views` int DEFAULT '0',
+  `singerId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `genreId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `releaseDate` datetime DEFAULT NULL,
+  `popularityScore` float DEFAULT '0',
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  `isHidden` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`songId`),
+  KEY `singerId` (`singerId`),
+  KEY `genreId` (`genreId`),
+  CONSTRAINT `Song_ibfk_1` FOREIGN KEY (`singerId`) REFERENCES `singer` (`singerId`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `Song_ibfk_2` FOREIGN KEY (`genreId`) REFERENCES `genre` (`genreId`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `song`
+--
+
+LOCK TABLES `song` WRITE;
+/*!40000 ALTER TABLE `song` DISABLE KEYS */;
+INSERT INTO `song` VALUES ('01KDMNV65BY9MXGQP16CHYP7NA','01. Intro to the album',50,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999300/songs/o2q4nzw4ihha4z7pusuz.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN7810KQBW935FH0X91WK0','2025-07-08 00:00:00',0,'2025-12-29 16:08:20',0),('01KDMNV7X7KGFPWV5ENYZWT8VT','02. Vùng An Toàn (ft. V#)',266,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999301/songs/lvmjqhnjovwimjtbtip4.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:22',0),('01KDMNV90Y4G6YQFHT7YPRGTMY','03. The One (ft. Đạt G)',191,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999303/songs/ylzyfp8ocl88342d9hva.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:23',0),('01KDMNVA50927DNCF7WJZJWY5Y','04. Viết Em Bản Tình Ca',164,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999304/songs/mvsf6mtr0khkrwjlwrbd.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:24',0),('01KDMNVBCK69SAWDZAKKQCT3J8','05. Ghệ Mới (ft. Young H)',226,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999305/songs/cibmwrjrwhfzszjnyd3i.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:25',0),('01KDMNVCW43SHH782RZ79C468P','06. Y Chang Em (interlude)',167,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999306/songs/ws5otvkgsvpncnvyxjtx.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:27',0),('01KDMNVDTXWV4X389M0TWG1CQJ','07. Feel At Home',164,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999308/songs/akcks2yii5ml2mlpihm2.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:28',0),('01KDMNVG8HX2J2YRPBSG9STVED','08. Selfish Man',217,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999310/songs/x0lkjrnmmg48tpjmg4dt.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:30',0),('01KDMNVHMM4XKJMSE9AXMTWCR0','09. Không Thuộc Về Nơi Này',208,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999312/songs/lkccwj5vklmctxceiunq.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:32',0),('01KDMNVK3ENC23CA518MJ93QYJ','10. Còn Ai Ngoài Anh Với Em',245,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999313/songs/d5yhzkhvjxmihvejx6bg.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:33',0),('01KDMNVMD0TEEPS1AMFV67CKK4','11. AreYouSad',225,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1766999314/songs/qb6npf9o1qygc0fjqdut.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G','2025-07-08 00:00:00',0,'2025-12-29 16:08:34',0),('01KDMQXCGB5HS2XTAEK7PQVCQ2','THÍC QÉ',176,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001469/songs/oeaezun42wwgwsg9bear.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:29',0),('01KDMQXDSHTH6P57D3ETEN0MTA','CA KHÚC CUỐI',186,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001470/songs/f928x7eekaolxbp1jr4j.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:30',0),('01KDMQXFMMPAP2NSDHXFZ0X70K','THÈN CHOÁ (ft. KayC)',245,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001472/songs/advn4rr0pixpyhhed6wh.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:32',0),('01KDMQXHKTM32GWAYF6RWW6BK0','BĂNG QUA CẦU GIẤY (ft. JasonDilla)',206,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001474/songs/aeaab10f3g0xwe8rakuo.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:34',0),('01KDMQXJQZYX7PT7QR0YY4XYJ2','LIFE OF A HXSTLER',130,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001475/songs/adk65lnmaqtepv09gncr.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:35',0),('01KDMQXM32ES2YM26SBZF7D5T2','MẤY ĐỨA NHÓC',263,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001477/songs/cuivyqbmllptuq81wo9e.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:37',0),('01KDMQXN5F5JEA7DSPXARPAGX9','LONELY STONIE',186,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001478/songs/yryx9x2eydsilsb6evms.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:38',0),('01KDMQXPWAGSBM3G9ZWXM5YDVA','TRỞ VỀ (ft. JustaTee)',358,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001479/songs/rh0vzg7ziiaywjf3zgiz.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:40',0),('01KDMQXR7MJR7E1E0PHSPRQYVM','PRAY FOR (ft. KayC)',244,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001481/songs/sdr50vgy2rpgszser5to.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:41',0),('01KDMQXSBEK1JN51SARM9G1QEM','BỞI VÌ',164,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001482/songs/rwd3ufms0opv6huwqkeg.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:42',0),('01KDMQXTRR67KZGCX6FB9MYCMZ','TIM ANH GHEN (ft. LVK, Dangrangto, TeuYungBoy)',280,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001483/songs/l2mw8ahntjuruxseh1qh.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:44',0),('01KDMQXVQB0KMJ0MWQK8MC8357','GET MONEY (ft. Thai VG)',162,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001485/songs/yc1cnnzsfovpmyawmuga.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:45',0),('01KDMQXWRNHWTRVZVXJ5T0TKZN','ANH FREESTYLE (ft. Gill)',172,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001486/songs/abbqoqywivhwraoswlfy.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:46',0),('01KDMQXXSWZ8PKE02STBK2HSGC','29 (ft. Mason Nguyen)',158,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001487/songs/nbnpl3xedbcuj5dec5wn.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:47',0),('01KDMQXZM4E1BNZYKYDH73N0B2','SIÊU NHÂN NGAO (ft. 24k.Right)',192,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001488/songs/zde3zhudgpojxaffap5i.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:49',0),('01KDMQY0S797GZDDHWN074TBKY','GIA TÀI (ft. BABY $MOKE)',212,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001490/songs/w7jsw5xkb8fq4wcjpioj.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:50',0),('01KDMQY2W47A8G8RNY2VKES6CP','NU CEP',156,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001491/songs/mjizfnjjyoitnv61nb3h.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:52',0),('01KDMQY3Z1D4S51MN0XBYSMX88','TỔNG KẾT (ft. Lil Wuyn)',192,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001493/songs/bi9tqxsmqnhxuauqdsxl.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:53',0),('01KDMQY597GJ1C1JQEQSSGE3G5','LÂU ĐÀI (ft. Flava Sati)',217,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001494/songs/kwmkrpm8ctks1p6xhhtg.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:54',0),('01KDMQY6MGNR4MYWMD9DYWBAGD','MỜI EM (ft. Mcee Blue)',204,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001496/songs/zisibcbpcfwunm8zrjds.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:56',0),('01KDMQY8B3VYXZGF3R1ERY2NQ9','ĐẾN THĂM ANH ĐI',263,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001497/songs/b6zhi9q9um21gbfkbmnn.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:44:57',0),('01KDMR3CJ6THKDNFZDJ3245N9Z','CẢ 2 (ft. QNT, SpideyBoy)',212,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001665/songs/gofnukjwjx4pjadkh4qv.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:47:46',0),('01KDMRAASYNXK9Y5MBX4KK0660','ĐAU ĐẦU',224,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001893/songs/kp1uttt4lcvdnz2lvqeq.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:51:33',0),('01KDMRAC1GT9PDQ01FTFXEP485','LONELY STONIE',186,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767001894/songs/h8xrkb8uqrilstkyh46d.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G','2024-11-12 00:00:00',0,'2025-12-29 16:51:34',0),('01KDMRT1VPJHV10JM08WZQHCV7','An (feat. Minstu)',205,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002408/songs/aocbsz7rktql4a6ukmxj.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:08',0),('01KDMRT4CZ9W2G313VPBQSMFR0','Chớp Mắt (feat. Young H & Pjpo)',231,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002411/songs/zmc8tusvdmanz41nao1w.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:11',0),('01KDMRT5PNG0EA8TJ1TR7KPN3J','Free And Dump (feat. VSOUL)',216,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002412/songs/ezg54mspba2ssjikfkdd.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:12',0),('01KDMRT70BNKFMBKJWQJ0KWD61','Hào Quang (feat. Rhymastic)',202,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002414/songs/t7uxu8xzanywysf4zgir.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:14',0),('01KDMRT8AX6NRAZ1M5E6R4CB5C','Mở mắt (feat. Đen)',274,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002415/songs/qgs4j72qhstp2nmwcf7i.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:15',0),('01KDMRT9BEJ1GC9ZEHDTMJM3Z5','More Life',188,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002416/songs/bagqy9fn6e0qf2dwzgo5.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:16',0),('01KDMRTABWTBBBQAAFPY84Y4T7','Nào biết đâu',190,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002417/songs/k6p2xmqbnnbmlawklgey.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:17',0),('01KDMRTBCW3Y05F6MTYEE16CDF','Nhắm Mắt (feat. Spyder , Kwzzzy)',188,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002418/songs/qmwais6qi5yn9ucdzedm.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:18',0),('01KDMRTDQHNX3AASW3MG274NFR','No way back (feat. B-Wine)',218,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002420/songs/mvzypw6vzoqqrnnllsd2.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:20',0),('01KDMRTF8Q6NF4RV71EYVZ4J0E','Tâm Tư (feat. Cam)',171,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002422/songs/kiq8d7fpuzruqvkowhzz.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:22',0),('01KDMRTGK0505ZYHXNE0REB883','Thay Đổi',205,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002423/songs/hjvkueukgahckzj7tbpu.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:23',0),('01KDMRTHNCQ6M56Z34X5WD0NM4','Vu Vơ (feat. 16 BrT)',172,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767002425/songs/m4eul3houaeyqk4bsunl.mp3',NULL,'',0,'01KDMK53S9P0XNA5NBDMAVABAE','01KDMN448A1TAWF4X8G4EN9P1G','2024-06-12 00:00:00',0,'2025-12-29 17:00:25',0),('01KDMSC7XXCJ7BV0K2J3WXP92Z','00 (Intro)',34,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003004/songs/pvr4xmxjylrykvsvtnyz.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN7810KQBW935FH0X91WK0','2023-03-02 00:00:00',0,'2025-12-29 17:10:04',0),('01KDMSC9N0HXK642VCHXQD49EQ','Chìm Sâu ( ft. Trung Trần )',156,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003006/songs/xew9jm3aq8qrtpl1jxcj.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:06',0),('01KDMSCB4MYYMS5EDEXP4W6HZN','Suit & Tie ( ft. Hoàng Tôn )',238,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003007/songs/ntynlxvobz3qibwuh1jk.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:08',0),('01KDMSCC3JN0KCPHXGGJVRFKGC','Va Vào Giai Điệu Này',190,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003009/songs/zflofsrwpo88a0angu6k.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:09',0),('01KDMSCDNFCFCKAEVVY2ZPYWN0','Tối Nay Ta Đi Đâu Nhờ',105,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003010/songs/wchyu25xpoyj9dsxbi59.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN38E5WHKYGZ9C651HMHS3','2023-03-02 00:00:00',0,'2025-12-29 17:10:10',0),('01KDMSCERVGAA0TX4KC0ZV32F5','Chỉ Một Đêm Nữa Thôi ( ft. tlinh )',142,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003011/songs/dmerenmnxe3haqyjqpq7.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:11',0),('01KDMSCFVHZAFKVRMASVDEBNSZ','Thôi Em Đừng Đi ( ft. Trung Trần )',174,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003012/songs/xr9cc4w1pidjhxefhspn.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:12',0),('01KDMSCH0N5CRSD3QWZM0GM26A','50-50 (Interlude)',61,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003014/songs/qaptrjrfb82uuemvmum2.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN448A1TAWF4X8G4EN9P1G','2023-03-02 00:00:00',0,'2025-12-29 17:10:14',0),('01KDMSCJ42E704SHY8X9RHKMH1','Cuốn Cho Anh Một Điếu Nữa Đi',186,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003015/songs/f8kqwotaegspsodqr5jp.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:15',0),('01KDMSCK7ZGA2V9SBJQ1N29SRY','Show Me Love',155,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003016/songs/edzvzcjz4omr2kr32yyx.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN38E5WHKYGZ9C651HMHS3','2023-03-02 00:00:00',0,'2025-12-29 17:10:16',0),('01KDMSCMMG5QVWMGWFWGGSZK78','Tại Vì Sao',203,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003017/songs/jjxf7so9eqk31vd6n4fk.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN448A1TAWF4X8G4EN9P1G','2023-03-02 00:00:00',0,'2025-12-29 17:10:17',0),('01KDMSCNK5C31T32263932RXVE','Thờ Er',98,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003018/songs/m86de8bqsnrznuhpa13z.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN38E5WHKYGZ9C651HMHS3','2023-03-02 00:00:00',0,'2025-12-29 17:10:18',0),('01KDMSCPMA0YGM09JEB8NMWA19','Ai Mới Là Kẻ Xấu Xa',193,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003019/songs/qm6oyhorcf1sfhtb7ceq.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:19',0),('01KDMSCQTJV3MJKCKG5RG3X4G6','Anh Đã Ổn Hơn',194,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003021/songs/bhjfhspujwuxgoyxchhu.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN31X9TDWACFSFB9MTK461','2023-03-02 00:00:00',0,'2025-12-29 17:10:21',0),('01KDMSCRSS1NMR5N9EHV1ZQWQH','Badtrip',159,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003022/songs/vqro2sdqbhybe7kzsdcu.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN38E5WHKYGZ9C651HMHS3','2023-03-02 00:00:00',0,'2025-12-29 17:10:22',0),('01KDMSCT09AXG5JVN9NXP8KYXH','99',172,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003023/songs/w5r47eexwdd72okc06k7.mp3',NULL,'',0,'01KDMJQT391NDZTY8ESEE1PJQW','01KDMN7810KQBW935FH0X91WK0','2023-03-02 00:00:00',0,'2025-12-29 17:10:23',0),('01KDMTAJS33XSVKMJE2NPMP6VW','16',175,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767003999/songs/lcapp9ursy0cxia5ydae.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:39',0),('01KDMTAM0MMXBX6HVYMGQWB9M0','Backstage Freestyle',198,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004000/songs/qdysde9inrsr8xfx8eyr.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMSEHHV0504NMWSWNF3W8W4','2023-10-10 00:00:00',0,'2025-12-29 17:26:40',0),('01KDMTAN2A58168TXFFNZTSHZX','Biên Giới Long Bình',178,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004001/songs/nodleqqovkpm4kjsezgf.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:41',0),('01KDMTANX6WGPHPGV8Y6FA7TKA','Cất Cánh (Interlude)',40,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004002/songs/xtj8eajkk3czmjblrwxg.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:42',0),('01KDMTAQMG38PV99T965HY9WRT','Champion',343,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004003/songs/sjg6mxixetcd5katdcxl.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:43',0),('01KDMTAS4Y2X8BP0NEGMBWFZRW','Chưa Xong',250,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004005/songs/z53vgnxequrk39tkbmcu.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:45',0),('01KDMTAT0KCHFBDDWAYY9TG276','CL5 (Interlude)',43,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004006/songs/mjn35uz7d9qmn9hsnqqd.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:46',0),('01KDMTAVNZ7X1Q410P2K7T8SND','Obito - Con kể Ba nghe',185,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004008/songs/hfcw9waydqg2ixkyqoxn.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:48',0),('01KDMTAWFN66B9T5FXD83KSZ7P','Đánh Đổi (Intro)',58,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004009/songs/gnqsqg99i3d7isutaxso.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:48',0),('01KDMTAX9ETQ06HSK7N767PWT2','Đánh Đổi (Outro)',49,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004009/songs/uxpwl9ylenses7zybpzv.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:49',0),('01KDMTAYK666ANR1YV75PRX61Q','Đánh Đổi (ft MCK)',227,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004011/songs/e6kmrwrgbcjcoutt4afx.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:51',0),('01KDMTAZMAPT6S5XBD9DCP0TV9','Đầu Đường Xó Chợ (ft Lăng LD)',185,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004012/songs/ktoyjv6gkxqr1znd96xn.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:52',0),('01KDMTB0RVPF8T6BDYFZDSR9AP','Hà Nội (ft VSTRA)',166,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004013/songs/tx7njlbyurqvf864flbt.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:53',0),('01KDMTB1YX49MPXE0KDFBPB4ZH','Sài Gòn ơi',188,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004014/songs/mfcclj8erqgnmamxadwd.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:54',0),('01KDMTB384VEENTMCT8W370A9S','Tell The Kids I Love Them (ft SHIKI)',224,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004015/songs/qhrnnlbnifjavd5tk4v3.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMSDV6PSVV1JZ8097DW2YG4','2023-10-10 00:00:00',0,'2025-12-29 17:26:55',0),('01KDMTB4DW4J65WZN0BNYQYH4P','Trốn Chạy',170,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004017/songs/vxtwzgahw8wt3y97gcqd.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMSEHHV0504NMWSWNF3W8W4','2023-10-10 00:00:00',0,'2025-12-29 17:26:57',0),('01KDMTB61A221QYPFSKE4G7JAJ','Tự Sự',204,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004018/songs/uhl2m5tyvvtwa2xtblkt.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:26:58',0),('01KDMTB7355G08ED5GAPF58AG3','Ước mơ của Mẹ (Interlude)',155,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004019/songs/xmulibuvnu1us4uhylgz.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN7810KQBW935FH0X91WK0','2023-10-10 00:00:00',0,'2025-12-29 17:26:59',0),('01KDMTB84G1AYMT8S73T5Q256P','Vô Điều Kiện',151,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004020/songs/qssoxdfl5ldfedtgqui2.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMN448A1TAWF4X8G4EN9P1G','2023-10-10 00:00:00',0,'2025-12-29 17:27:00',0),('01KDMTB96KG41C12CWPZNYFDJ0','Xuất Phát Điểm',189,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767004021/songs/yxe3wagrzetaos1oahjc.mp3',NULL,'',0,'01KDMK2DCAWTB4BMRAX365MFWR','01KDMSEHHV0504NMWSWNF3W8W4','2023-10-10 00:00:00',0,'2025-12-29 17:27:01',0),('01KDMVNJV7EK5SMSQ5E0A6BHPC','Bảnh Zé (ft Coldzy, Dangrangto, DMT)',315,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005408/songs/gnhp5txjfbquzjh5xkea.mp3',NULL,'',0,'01KDMV1XBM3P8NG9ED2HFF6MYH','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:50:08',0),('01KDMVNNG7FQ7GQM27XP2YKT36','Âm Thầm Bên Em',850,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005410/songs/mhuyygng56di4yryzcda.mp3',NULL,'',0,'01KDMV5TX2ZXDPJT2S50Y6Y1BQ','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:50:10',0),('01KDMVNQM7PQXPR9VTTZF3ZFBM','Anh Ghét Làm Bạn Em',271,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005412/songs/r5jj59p1lapr82lymsdl.mp3',NULL,'',0,'01KDMV4P7VTVQ3XBA4E81HJNKD','01KDMSDV6PSVV1JZ8097DW2YG4',NULL,0,'2025-12-29 17:50:13',0),('01KDMVNRQA6GZT9M4A95NR6V0B','ĐẲNG CẤP',137,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005414/songs/tjhyftkfeeo3bja5up0l.mp3',NULL,'',0,'01KDMV5BDSV7T15H9GHXTDDT10','01KDMSEHHV0504NMWSWNF3W8W4',NULL,0,'2025-12-29 17:50:14',0),('01KDMVNT3RFQ7TB4AC90ACX86T','Bao Giờ Lấy Chồng',248,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005415/songs/nn9qhxcvjmah616ut8iy.mp3',NULL,'',0,'01KDMV2XX10P6XBBYB7NW4RHD4','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:50:15',0),('01KDMVNVEXHW76H8467S0HEEEF','Mình Yêu Nhau Đi',232,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005416/songs/cekoqgorfokjatxkare7.mp3',NULL,'',0,'01KDMV2XX10P6XBBYB7NW4RHD4','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:50:16',0),('01KDMVNWQP1Z8KCW095PB450F5','Nâng Chén Tiêu Sầu',251,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005418/songs/pdy7rfxqkb7mqmyajbj5.mp3',NULL,'',0,'01KDMV2XX10P6XBBYB7NW4RHD4','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:50:18',0),('01KDMVNY3QMWKAA06WZ7P9AAV8','Mượn Rượu Tỏ Tình (ft EMILY)',206,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005419/songs/cxit8liejuzy2j9k1wl9.mp3',NULL,'',0,'01KDMV4E6CNKYH9QMZK77P0CP9','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:50:19',0),('01KDMVNZCP09A86RS63MCC08BB','YÊU NẮM (ft EMILY)',258,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005420/songs/usv2fje1qhcowedwcdq5.mp3',NULL,'',0,'01KDMV4E6CNKYH9QMZK77P0CP9','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:50:20',0),('01KDMVP0FXCZF2MED9KFH3SHXA','LET HA GO RMX',164,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005422/songs/grvl8oz1hrqrlgmezf5a.mp3',NULL,'',0,'01KDMV3KB0FPEN8TMSWQSEXVAR','01KDMSEHHV0504NMWSWNF3W8W4',NULL,0,'2025-12-29 17:50:22',0),('01KDMVP1KK92XFCSRTBH0GSEG4','MATCHIN&#x27;',140,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005423/songs/vm8pignit9msbcd3nbt2.mp3',NULL,'',0,'01KDMV3KB0FPEN8TMSWQSEXVAR','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:50:23',0),('01KDMVP2KSWHRESQWYDP1MQW9Z','NGOÀI BO',152,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005424/songs/ccpqo1aaouksag3irrys.mp3',NULL,'',0,'01KDMV3KB0FPEN8TMSWQSEXVAR','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:50:24',0),('01KDMVP3NQ1C5Y25XRJE56830B','Tiramisu',144,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005425/songs/eymhypjznmolg4nywvmg.mp3',NULL,'',0,'01KDMV6P8381ZNCZP4SEGCCAEZ','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:50:25',0),('01KDMVP4RT6QTS2N2C300NCWJZ','Cannonball (ft Don Toliver)',140,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005426/songs/cfarks3nmb3ekrfkwjky.mp3',NULL,'',0,'01KDMV6Y6VYSF5NVXWZWD7R0WM','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:50:26',0),('01KDMW2E4R780SRTJ7H553QE72','420chillnfree',164,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005828/songs/kmpe6ll1ux6vbdtztznn.mp3',NULL,'',0,'01KDMJQA28RQMGB5FJWA1XKY32','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:57:09',0),('01KDMW2FGX1P3NCV0DP614ZYRX','BẠC PHẬN',256,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005830/songs/zgnxjqqfuot5e5jqhc1o.mp3',NULL,'',0,'01KDMVRMG9G4R1C1476YJT5PMH','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 17:57:10',0),('01KDMW2GZ18QM4DDGGYZ2KXECW','BƯỚC QUA ĐỜI NHAU - LÊ BẢO BÌNH [ OFFICIAL MV 4K ]',290,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005832/songs/isfwl0xydamiiq4n4ikn.mp3',NULL,'',0,'01KDMVQ7YTZK65Q9H3NAS6B0V9','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:57:12',0),('01KDMW2JHTQ3438RNW8RC2H7M5','Buồn Lắm Em Ơi',345,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005833/songs/gnfxca8xtll1rtjgzfrx.mp3',NULL,'',0,'01KDMVQGPKEKEBAZ5T5NX5W905','01KDMSDV6PSVV1JZ8097DW2YG4',NULL,0,'2025-12-29 17:57:13',0),('01KDMW2KZ819JXKMWKDQCX774J','Cơn Mưa Ngang Qua',234,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005835/songs/ml0fwuxwbvciwetdtdum.mp3',NULL,'',0,'01KDMV5TX2ZXDPJT2S50Y6Y1BQ','01KDMN38E5WHKYGZ9C651HMHS3',NULL,0,'2025-12-29 17:57:15',0),('01KDMW2NGJBAVY1HDE4701N3FS','Lắm Mối Tối Ngồi Không',193,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005836/songs/sbt9vpnwqyasbike2xks.mp3',NULL,'',0,'01KDMVSK9J6G0984QSPWE8W6YB','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:57:16',0),('01KDMW2PR7X22R9PBV8B7NRZ3A','Hoàng Thuỳ Linh - See Tình - Official Music Video',237,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005838/songs/bgamhjxvyeiiiuww1gfs.mp3',NULL,'',0,'01KDMVSK9J6G0984QSPWE8W6YB','01KDMN38E5WHKYGZ9C651HMHS3',NULL,0,'2025-12-29 17:57:18',0),('01KDMW2R3NBJ5BRW0XH3VY5T81','Gieo Quẻ (ft Đen)',260,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005839/songs/yqzckccgooqhd0fg8f7a.mp3',NULL,'',0,'01KDMVSK9J6G0984QSPWE8W6YB','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:57:19',0),('01KDMW2SDWTS551CV0S9TAR1GH','Tình Yêu Ngủ Quên (ft LyHan)',202,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767005840/songs/y0g5pfrdlqwjcpzlt7dw.mp3',NULL,'',0,'01KDMVT4CAJ0M9HCF35XNFJYT4','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 17:57:20',0),('01KDMWHFWS6T771B6RH2Q2A9NP','YÊU NHƯ TRẺ CON',227,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006322/songs/whtwe9imq8vlq43hx302.mp3',NULL,'',0,'01KDMJZMVM6MC060H1H4MN0ZPW','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:05:22',0),('01KDMWHHB9TNX6Y3Y46FADKBGV','Tội Cho Cô Gái Đó',303,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006324/songs/nuxtpxwom6ltcfpublsq.mp3',NULL,'',0,'01KDMW5383R397YKS8F4C105PX','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 18:05:24',0),('01KDMWHJJH01SEP4MQX95ANAWD','Yêu Lại Từ Đầu',228,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006325/songs/farlywiai1rsrmuwz5nl.mp3',NULL,'',0,'01KDMW5383R397YKS8F4C105PX','01KDMSDV6PSVV1JZ8097DW2YG4',NULL,0,'2025-12-29 18:05:25',0),('01KDMWHM2QM41CM6SSJWT4X439','0.1 in the end',239,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006326/songs/ikmpal9tzlkl45csysru.mp3',NULL,'',0,'01KDMW57T8ADX3V2FGRXM2V4GK','01KDMSEHHV0504NMWSWNF3W8W4',NULL,0,'2025-12-29 18:05:26',0),('01KDMWHNBWREV0644YBPAQGKR1','GIAYPHUT',206,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006328/songs/ckewlwpv8zxx5z2lusux.mp3',NULL,'',0,'01KDMW5DM7P32AV0507XP92GSA','01KDMSEHHV0504NMWSWNF3W8W4',NULL,0,'2025-12-29 18:05:28',0),('01KDMWHPE82ZTCCBM0V50QYFP4','KIBEEM',186,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006329/songs/kvmoqeytqjzrsoiqbj1k.mp3',NULL,'https://res.cloudinary.com/dsmbpvjng/image/upload/v1767137299/covers/i6rxxigg53l4e0cfdaz1.png',0,'01KDMW5DM7P32AV0507XP92GSA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:05:29',0),('01KDMWHQZE98TDC9Z08SWD2HCS','LÁ XA LÌA CÀNH',289,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006330/songs/gt6uwzumh7xayxcq3r3k.mp3',NULL,'',0,'01KDMVQ7YTZK65Q9H3NAS6B0V9','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 18:05:30',0),('01KDMWHSDQTKXKNSBGHSG38QJ9','0.2 in the end (ft Lil Liêm)',240,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006332/songs/rsddekz0jb05dhaxmwsn.mp3',NULL,'',0,'01KDMW57T8ADX3V2FGRXM2V4GK','01KDMSEHHV0504NMWSWNF3W8W4',NULL,0,'2025-12-29 18:05:32',0),('01KDMWHTJM5AVEY21N49TSG6M7','500lbs',153,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006333/songs/t7zvevedmjmhqyrifsub.mp3',NULL,'https://res.cloudinary.com/dsmbpvjng/image/upload/v1767137286/covers/q88tc6mnt3xy9jbzf1aw.png',0,'01KDMW68KM1ECYZ42JHA3NKHHR','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:05:33',0),('01KDMWHWT8XJ3A16M1GJ4923K4','Down With Me',124,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006334/songs/slaoacdqsxpccuy66wrk.mp3',NULL,'',0,'01KDMW68KM1ECYZ42JHA3NKHHR','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:05:35',0),('01KDMWHXV3HQS6A7XXP1BW9PVQ','MOPHAI',157,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006336/songs/jej3ih9itd8e6pnbklzd.mp3',NULL,'',0,'01KDMW6ERV3P2F46R7NRN74GE2','01KDMSEHHV0504NMWSWNF3W8W4',NULL,0,'2025-12-29 18:05:36',0),('01KDMWHZBB83E9VE3FTR49C2GJ','NGTANOISE',181,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006338/songs/bqgf5eb5rgrhu0rrxcsm.mp3',NULL,'',0,'01KDMW6W2R0E9VV1MCAF4Z3S5B','01KDMN38E5WHKYGZ9C651HMHS3',NULL,0,'2025-12-29 18:05:38',0),('01KDMWJ0Q16RENJHHT59VR8BJP','Let Go',178,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006339/songs/xgmh7jpyh1i6c4jvd5f6.mp3',NULL,'https://res.cloudinary.com/dsmbpvjng/image/upload/v1767137369/covers/s3qfouvywuts7ivkjvla.png',0,'01KDMW4EF55AAZGBG7E3SRM5FW','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:05:39',0),('01KDMWZ56VAFACS40JAJY22G2J','Thu Cuối (ft Yanbi & Hằng BingBoong)',301,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006770/songs/jomnvrjtwpfioz7h9zo4.mp3',NULL,'',0,'01KDMWJK9TCRR72RPT6P3YH5G0','01KDMN38E5WHKYGZ9C651HMHS3',NULL,0,'2025-12-29 18:12:50',0),('01KDMWZ68PSJKN5TZS19X55RAR','Đi Theo Bóng Mặt Trời (ft Giang Nguyễn)',166,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006771/songs/bc7eeurracxmkceqyvyz.mp3',NULL,'',0,'01KDMWKNXEQM38A1YX7BENZFQH','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 18:12:51',0),('01KDMWZ8HJENK491SWMBDSFPH5','Mang Tiền Về Cho Mẹ  (ft Nguyên Thảo)',402,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006773/songs/kbqlcc5qhsxa8akvtpu8.mp3','[Intro: Đen]\r\n\r\nMang tiền về cho mẹ, mang tiền về cho mẹ\r\n\r\nMang tiền về cho mẹ, đừng mang ưu phiền về cho mẹ!\r\n\r\nMang tiền về cho mẹ, mang tiền về cho mẹ\r\n\r\nMang tiền về cho mẹ, đừng mang ưu phiền về cho mẹ!\r\n\r\n[Verse 1: Đen]\r\n\r\nNếu không có mẹ, con cũng chỉ là đồ bỏ mà thôi\r\n\r\nSẽ không có nề có nếp, dù đặt mình lên cái chõ đồ xôi\r\n\r\nCái máy tính mà con thu âm mấy bài đầu, mẹ đổi bằng nhiều ngày đổ mồ hôi (ướt nhòe)\r\n\r\nGiờ con đã đi làm và con kiếm tiền về, mẹ chỉ cần ngồi đó mà xơi (nước chè)\r\n\r\nÔi những ngày xám ngoét, gió liêu xiêu dáng mẹ gầy so\r\n\r\nCó khi mẹ ngất giữa đường vì cả ngày chẳng có gì no\r\n\r\nMẹ không dám ăn, không dám mặc, không dám tiêu cũng chỉ vì lo (lo cho con)\r\n\r\nGiờ con đeo túi tò te đi mua cho mẹ cái túi Dior\r\n\r\nTiếng nói đầu tiên là do ai dạy? (chính là mẹ)\r\n\r\nNét chữ đầu tiên là tay ai cầm? (chính là mẹ)\r\n\r\nSai lầm đầu tiên là nhờ ai sửa? (chính là mẹ)\r\n\r\nVấp ngã đầu đời là được ai nâng? (luôn là mẹ)\r\n\r\nBài hát hay nhất trần đời là lời mẹ ru giữa trưa nắng hè\r\n\r\nNhững ngày dài nhất trần đời là mẹ đi chợ xa chưa thấy về\r\n\r\nThức ăn ngon nhất trần đời là cơm bếp củi mẹ nấu xoong gang\r\n\r\nBước ra đời là ông này bà nọ, trở về nhà là một đứa con ngoan\r\n\r\nBước ra đời là ông này bà nọ, trở về nhà là một đứa con ngoan\r\n\r\n[Chorus: Nguyên Thảo]\r\n\r\nNhững đứa trẻ rồi sẽ đi xa nhà\r\n\r\nSẽ có rất nhiều hành trình qua trong đời\r\n\r\nMặc dù đời có lúc chẳng được như mong đợi\r\n\r\nRời xa mái nhà đừng hòng còn ai nuông chiều\r\n\r\nNhững đứa trẻ sẽ phải đi xa nhà\r\n\r\nSẽ phải nếm rất nhiều mặn, ngọt, cay, chua, đắng\r\n\r\n“Mẹ chỉ muốn chúng mày phải tự lo cho mình\r\n\r\nVề đây mà gầy là mẹ cho ăn đòn.”\r\n\r\n[Hook: Đen]\r\n\r\nMang tiền về cho mẹ (mẹ ơi), mang tiền về cho mẹ (mẹ ạ)\r\n\r\nMang tiền về cho mẹ, đừng mang ưu phiền về cho mẹ! (what?)\r\n\r\nMang tiền về cho mẹ (mẹ ơi), mang tiền về cho mẹ (mẹ ạ)\r\n\r\nMang tiền về cho mẹ, đừng mang ưu phiền về cho mẹ!\r\n\r\n[Verse 2: Đen]\r\n\r\nCon đã kiếm được tiền từ hình ảnh, kiếm được tiền từ âm thanh\r\n\r\nTất cả đều do cha sinh mẹ đẻ, dù không phải thế phiệt hay trâm anh\r\n\r\nNgười hâm mộ đợi con từ Đồng Khởi\r\n\r\nXếp hàng dài đến hết đường Ký Con\r\n\r\nXin chữ ký con\r\n\r\nCon rất quý họ, và cũng hy vọng là họ đều quý con\r\n\r\nTiền của con không có cần phải rửa\r\n\r\nNó cũng chỉ ám mùi mồ hôi\r\n\r\nMẹ yên tâm con là công dân tốt\r\n\r\nĐóng thuế đều và chỉ có đủ mà thôi\r\n\r\nNhạc con phiêu ở nhiều phương diện\r\n\r\nTiền con kiếm là tiền lương thiện\r\n\r\nĐem sức lực ra làm phương tiện\r\n\r\nSống phải đẹp như là hoa hậu\r\n\r\nDù không cần thiết được tặng vương miện\r\n\r\nCon trai giống mẹ nên là con hiền khô\r\n\r\nLao vào đời không làm mẹ thêm phiền lo\r\n\r\nBỏ qua dè bỉu, không cho cơm no\r\n\r\nMang về cho mẹ toàn tiền thơm tiền tho\r\n\r\nMẹ là mẹ của con, con là của mọi người\r\n\r\nLên sân khấu làm mọi người vui, về nhà làm cho mẹ cười\r\n\r\nVì thời gian nó thật là tàn khốc nên con thấy mình càng ngày càng non gan\r\n\r\nBao nhiêu tiền mua lại được một ngày mà con còn ngồi vừa lọt cái xoong gang?\r\n\r\nMuốn được nghe tiếng mẹ mắng mỗi ngày để con thấy mình còn chưa được khôn ngoan\r\n\r\nCon trai mẹ chỉ là người phục vụ nhưng muốn đời đối xử với mẹ như một bà hoàng\r\n\r\nNhư một bà hoàng\r\n\r\n[Chorus: Nguyên Thảo]\r\n\r\nNhững đứa trẻ rồi sẽ đi xa nhà\r\n\r\nSẽ có rất nhiều hành trình qua trong đời\r\n\r\nMặc dù đời có lúc chẳng được như mong đợi\r\n\r\nRời xa mái nhà đừng hòng còn ai nuông chiều\r\n\r\nNhững đứa trẻ sẽ phải đi xa nhà\r\n\r\nSẽ phải nếm rất nhiều mặn, ngọt, cay, chua, đắng\r\n\r\n“Mẹ chỉ muốn chúng mày phải tự lo cho mình\r\n\r\nVề đây mà gầy là mẹ cho ăn đòn.”\r\n\r\n[Bridge: Nguyên Thảo]\r\n\r\n\"Mấy đứa chúng mày liệu mà ăn cho nhiều\r\n\r\nĐừng ham chơi và chọn bạn mà chơi cho đúng\r\n\r\nNếu có gì gọi điện ngay cho mẹ\r\n\r\nChạy xe ra đường đừng rồ ga bốc đầu\r\n\r\nRa bên ngoài học điều hay mang về\r\n\r\nĐừng mang mất dạy, mày về đây tao đánh\r\n\r\nTiền đã khó kiếm rồi, tập xài cho tiết kiệm\r\n\r\nĐừng hút thuốc nhiều, mày lại như ba mày”\r\n\r\n~ Khúc hát ru của Nguyên Thảo ~\r\n\r\n[Verse 3: Đen]\r\n\r\nCon biết thời gian lạnh lùng và tàn khốc\r\n\r\nNó ám người ta từ da tới làn tóc\r\n\r\nKhông có ngoại lệ, cũng không có miễn trừ\r\n\r\nLà người quan sát không bao giờ có điểm mù\r\n\r\nMẹ bán lưng cho trời, bán mặt cho đất\r\n\r\nMẹ dạy đôi chân đừng dao động như con lắc\r\n\r\nNếu có nhiều tiền, con sản xuất son môi\r\n\r\nMàu cho các mẹ con đặt tên là “son sắt”\r\n\r\nGiờ không phải doanh nhân, con vẫn có kế toán\r\n\r\nĐể tiền của con không có đứa nào thó mất\r\n\r\nVì tay mẹ đã có, có quá nhiều vết chai\r\n\r\nNên con đưa tiền để mẹ cầm cho nó chắc\r\n\r\nChim thì có tổ, là con người thì chắc chắn phải có tông\r\n\r\nMuốn bay vào trời cao rộng, con nào không cần có lông?\r\n\r\nMang tiền về cho mẹ hiền, để mẹ may thêm đôi cánh\r\n\r\nMang buồn về cho mẹ phiền, sẽ gặp ngay thiên lôi đánh\r\n\r\nNhạc Rap đến từ Đông Nam Á (Việt Nam)\r\n\r\nMang lời mẹ bật cho bảy lục địa nghe (tiếng Việt)\r\n\r\nVâng lời mẹ, không gian trá\r\n\r\nXuất khẩu âm nhạc mang tiền về\r\n\r\n[Refrain: Đen]\r\n\r\nĐưa tiền cho mẹ, mẹ là tiền “vệ”\r\n\r\nĐừng làm điều xấu, sẽ thành tiền “lệ”\r\n\r\nLao động hăng say, hơn cả tiền “đề”\r\n\r\nCầm về tiền tốt, đừng có cầm về tiền “tệ”\r\n\r\nĐưa tiền cho mẹ, mẹ là tiền “vệ”\r\n\r\nĐừng làm điều xấu, sẽ thành tiền “lệ”\r\n\r\nLao động hăng say, hơn cả tiền “đề”\r\n\r\nCầm về tiền tốt, đừng có cầm về tiền “tệ”\r\n\r\nCũng may đã từng lênh đênh, để con biết yếu thì đừng ra gió\r\n\r\nCũng may là fan của Đen, họ chưa bao giờ từng la ó\r\n\r\nCũng may là tìm thấy đường, trong bao la muôn trùng xa đó\r\n\r\nVà cũng may là ba mẹ nghèo để cho con biết tiền làm ra khó\r\n\r\nCũng may đã từng lênh đênh, để con biết yếu thì đừng ra gió\r\n\r\nCũng may là fan của Đen, họ chưa bao giờ từng la ó\r\n\r\nCũng may là tìm thấy đường, trong bao la muôn trùng xa đó\r\n\r\nCũng may là ba mẹ nghèo để cho con biết tiền làm ra khó\r\n\r\n[Outro: Đen]\r\n\r\nMang tiền về cho mẹ (yeah, yeah, Đen Vâu), mang tiền về cho mẹ\r\n\r\nMang tiền về cho mẹ, đừng mang ưu phiền về cho mẹ! (Oh)\r\n\r\nMang tiền về cho mẹ (về cho mẹ), mang tiền về cho mẹ (về cho mẹ)\r\n\r\nMang tiền về cho mẹ, ba cần thì xin mẹ (haha yeah)','https://res.cloudinary.com/dsmbpvjng/image/upload/v1767137266/covers/cnw6pamm7lqj93iaheor.jpg',0,'01KDMWKNXEQM38A1YX7BENZFQH','01KDMN31X9TDWACFSFB9MTK461',NULL,0,'2025-12-29 18:12:53',0),('01KDMWZBMKHY0P62A7DPC7KVNC','Long',263,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006776/songs/cfzjp3ngrelfkzpt9lwz.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:12:56',0),('01KDMWZCTA3EAYA60CAH145KAA','Celeb Date',196,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006778/songs/enbjxtion1xmf2bzqnue.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:12:58',0),('01KDMWZDTM95NNPRT0XD8DQAEM','Nhiều Hơn',186,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006779/songs/wtzfee1rwvhhznamdqup.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:12:59',0),('01KDMWZF85CT658171PW4CE012','In Love (ft JustaTee)',201,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006780/songs/otepwaseg3tqjwchfurh.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:13:00',0),('01KDMWZGTTKKTFA6C015FP60ZV','Giải Cứu Mỹ Nhân (ft Hoàng Tôn)',229,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006782/songs/hqncb7gjl3el2mbggfy1.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:13:02',0),('01KDMWZJJ6AMA60DT4M6FTQC43','Love Game (ft tlinh)',200,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006783/songs/s8akhxuxyw7ig5aixqkh.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:13:04',0),('01KDMWZM3D1NAW5W0GEGQ2Z8NA','Nét',200,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006785/songs/c2m9sxzizlavfafv4kxa.mp3',NULL,'',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN448A1TAWF4X8G4EN9P1G',NULL,0,'2025-12-29 18:13:05',0),('01KDMWZPZNGSVR945X1BNN08VX','Đừng Để Tiền Rơi (ft Anh Phan)',240,'https://res.cloudinary.com/dsmbpvjng/video/upload/v1767006787/songs/rhbrzqeshw8ggjxvaqtw.mp3','[Intro]\r\n\r\nYeah, you know we still here\r\n\r\nH-town motherfucker (Huh?)\r\n\r\nNorthside motherfucker (Huh?)\r\n\r\nWe repping this shii (Uh)\r\n\r\nNghe này\r\n\r\n[Chorus]\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nói như nào nhờ?)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Thêm lần nữa đê)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nghe lời tao đấy)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Yea)\r\n\r\n(Ey), yah, ey (Ooh), yah, ey\r\n\r\n(Ey), (Yah, ey). (Ooh), (Yah, ey), như nào nhờ?\r\n\r\n(Ey), (Yah, ey) (Ooh), (Yah, ey), chuẩn bị này\r\n\r\n[Verse 1]\r\n\r\nĐừng để tiền rơi, nếu nó rơi, thì phải nhặt nó lên\r\n\r\nLow G có khuôn mặt dễ nhớ, và một con nhạc khó quên\r\n\r\nEm ấy chê đồ tao mặc xấu quá, nên tao bỏ hết đồ ra\r\n\r\nTắt đèn đi, tao chơi trò tìm em, tìm em trong bóng đêm\r\n\r\nNghe nhạc anh vui hong? Mấy bé mặt chả thích, thích, thích\r\n\r\nBé anh học tìm x, giờ khôn lớn anh tìm xxx (Vãi)\r\n\r\nMấy con vợ tập viết, được vài bar bắt đầu định ra oai\r\n\r\nNhạc bạn nghe cũng ngon đấy\r\n\r\nNhưng ngon này bỏ chữ G ra ngoài\r\n\r\n(Bởi vì chữ G ở tên tao mất òi)\r\n\r\n(Nghe chưa mấy con Poodle, Bichon với mấy con Chihuahua, Corgi của tao?)\r\n\r\nNên là\r\n\r\nSee upcoming rap shows\r\n\r\nGet tickets for your favorite artists\r\n\r\nYou might also like\r\n\r\nĐừng Để Tiền Rơi (Special Version)\r\n\r\nLow G (VNM) & Anh Phan\r\n\r\nTam Sên\r\n\r\nDế Choắt\r\n\r\nChất Gây Hại\r\n\r\nQuang Hùng MasterD & Hino (VNM)\r\n\r\n[Chorus]\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nói như nào nhờ?)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Thêm lần nữa đê)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nghe lời tao đấy)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Yea, uh)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nói như nào nhờ?)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Thêm lần nữa đê)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nghe lời tao đấy)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Yea)\r\n\r\n(Ey), yah, ey (Ooh), yah, ey\r\n\r\n(Ey), (Yah, ey). (Ooh), (Yah, ey), mẹ, bắn thuốc lào nhiều quá? (Yea)\r\n\r\n(Ey), (Yah, ey) (Ooh), (Yah, ey), thôi đê (Yea)\r\n\r\n[Verse 2]\r\n\r\nYea, cash in, cash out\r\n\r\nĐi rút tiền mà tao bị fan quây chụp ảnh đúng đông (Huh?)\r\n\r\nMấy con vợ này chưa bao giờ nghe quả flow đi kiểu này đúng hong? (Right)\r\n\r\nNhạc của tao ở đẳng khác òi, nghe mà mất tập trung mới khó\r\n\r\nVà bé La vẫn khóc trong stu hằng ngày vì tao giết beat của nó, uh (Ngon)\r\n\r\nLook at me, look at me now\r\n\r\nChúng mày là you, và gọi chúng mình là we, còn your daddy là tao (IELTS chín chấm)\r\n\r\nSurely I\'m changing the scence, better give me the crown\r\n\r\nAlright cool, I’ll be spittin\' it now\r\n\r\nTao đi lên còn chúng mày bị down\r\n\r\nĐừng chơi tài cao nếu mày tài cao\r\n\r\nĐừng xưng mày tao với lông mày tao\r\n\r\nBass phòng bay, nó là cockpit (Huh)\r\n\r\nĐang moshpit thì bị bóp đít (Này mẹ, thằng nào đấy, chó này?)\r\n\r\nLên bàn nhậu đừng có rót ít\r\n\r\nChúng mày chả biết gì về lịch sử (Yea)\r\n\r\nDỏng tai lên mà nghe này, okay\r\n\r\nTrăm triệu năm trước con người bảo \"Uồi, vãi ò khủng long\"\r\n\r\nTrăm triệu năm sau con người bảo \"Uồi, Long khủng vãi ò\"\r\n\r\n[Chorus]\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nói như nào nhờ?)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Thêm lần nữa đê)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nghe lời tao đấy)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Yea)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nói như nào nhờ?)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Thêm lần nữa đê)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Nghe lời tao đấy)\r\n\r\nĐừng để tiền rơi, đừng để tiền rơi (Yea)\r\n\r\n(Ey, ooh), tao nói thẳng với chúng mày nhớ\r\n\r\n(Ey, ooh), lứa trẻ á? Đéo thằng nào có tuổi luôn\r\n\r\n(Ey, ooh), Vì người nào có tuổi thì người đấy sẽ là người già đấy, mày hiểu không?\r\n\r\n[Outro]\r\n\r\n(Oai thế, oai lắm cơ, ey)','https://res.cloudinary.com/dsmbpvjng/image/upload/v1767137187/covers/ne5titk2vjhczspjezt3.png',0,'01KDMWKVQCDMACZ41SFZR1E9KA','01KDMN38E5WHKYGZ9C651HMHS3',NULL,0,'2025-12-29 18:13:08',1);
+/*!40000 ALTER TABLE `song` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `songfeature`
+--
+
+DROP TABLE IF EXISTS `songfeature`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `songfeature` (
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tempo` float DEFAULT NULL,
+  `totalBeats` int DEFAULT NULL,
+  `averageBeats` float DEFAULT NULL,
+  `chromaStftMean` float DEFAULT NULL,
+  `chromaStftStd` float DEFAULT NULL,
+  `chromaStftVar` float DEFAULT NULL,
+  `chromaCqMean` float DEFAULT NULL,
+  `chromaCqStd` float DEFAULT NULL,
+  `chromaCqVar` float DEFAULT NULL,
+  `chromaCensMean` float DEFAULT NULL,
+  `chromaCensStd` float DEFAULT NULL,
+  `chromaCensVar` float DEFAULT NULL,
+  `mfccMean` float DEFAULT NULL,
+  `mfccStd` float DEFAULT NULL,
+  `mfccVar` float DEFAULT NULL,
+  `mfccDeltaMean` float DEFAULT NULL,
+  `mfccDeltaStd` float DEFAULT NULL,
+  `mfccDeltaVar` float DEFAULT NULL,
+  `rmseMean` float DEFAULT NULL,
+  `rmseStd` float DEFAULT NULL,
+  `rmseVar` float DEFAULT NULL,
+  `centMean` float DEFAULT NULL,
+  `centStd` float DEFAULT NULL,
+  `centVar` float DEFAULT NULL,
+  `specBwMean` float DEFAULT NULL,
+  `specBwStd` float DEFAULT NULL,
+  `specBwVar` float DEFAULT NULL,
+  `contrastMean` float DEFAULT NULL,
+  `contrastStd` float DEFAULT NULL,
+  `contrastVar` float DEFAULT NULL,
+  `rolloffMean` float DEFAULT NULL,
+  `rolloffStd` float DEFAULT NULL,
+  `rolloffVar` float DEFAULT NULL,
+  `tonnetzMean` float DEFAULT NULL,
+  `tonnetzStd` float DEFAULT NULL,
+  `tonnetzVar` float DEFAULT NULL,
+  `zcrMean` float DEFAULT NULL,
+  `zcrStd` float DEFAULT NULL,
+  `zcrVar` float DEFAULT NULL,
+  `harmMean` float DEFAULT NULL,
+  `harmStd` float DEFAULT NULL,
+  `harmVar` float DEFAULT NULL,
+  `percMean` float DEFAULT NULL,
+  `percStd` float DEFAULT NULL,
+  `percVar` float DEFAULT NULL,
+  `frameMean` float DEFAULT NULL,
+  `frameStd` float DEFAULT NULL,
+  `frameVar` float DEFAULT NULL,
+  `emotionId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`songId`),
+  KEY `emotionId` (`emotionId`),
+  CONSTRAINT `SongFeature_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `SongFeature_ibfk_2` FOREIGN KEY (`emotionId`) REFERENCES `emotion` (`emotionId`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `songfeature`
+--
+
+LOCK TABLES `songfeature` WRITE;
+/*!40000 ALTER TABLE `songfeature` DISABLE KEYS */;
+/*!40000 ALTER TABLE `songfeature` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `songgenre`
+--
+
+DROP TABLE IF EXISTS `songgenre`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `songgenre` (
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `genreId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`songId`,`genreId`),
+  KEY `genreId` (`genreId`),
+  CONSTRAINT `SongGenre_ibfk_1` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `SongGenre_ibfk_2` FOREIGN KEY (`genreId`) REFERENCES `genre` (`genreId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `songgenre`
+--
+
+LOCK TABLES `songgenre` WRITE;
+/*!40000 ALTER TABLE `songgenre` DISABLE KEYS */;
+/*!40000 ALTER TABLE `songgenre` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user` (
+  `userId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `roleId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `isActive` tinyint(1) DEFAULT '1',
+  `createdAt` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userId`),
+  UNIQUE KEY `email` (`email`),
+  KEY `roleId` (`roleId`),
+  CONSTRAINT `User_ibfk_1` FOREIGN KEY (`roleId`) REFERENCES `role` (`roleId`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES ('01K8SF3R1W8DKG96R7VFW9095P','thuyen','cus@gmail.com','0706132315','$2b$10$iaFYTEYT.XdT46gVdWNh6uiA4oMmdg4U2KJXwsd.t6V.FE9MzgEPK',NULL,1,'2025-10-30 02:28:23'),('01K9PASK9P79R0FGFGN934NB65','Trần Văn Trọng','tronglientri@gmail.com','0399289458','$2b$10$FbfUyF5bg1bcYZJDNW8ideFT6S6h10ZEGY6AYV/HWc/M3ZLUHCcgi',NULL,1,'2025-11-10 14:30:55'),('01KD3N0BRKJKDBPJN1212B2MGR','Trần Văn Trọng','vutru868@gmail.com','0399289458','$2b$10$fYO66IXhs2RuLeAYhAMyleoFJhxSjAKnRHJjEL61j0zkk9/Y7yK1q',NULL,1,'2025-12-23 01:26:35'),('01KDQN6JKS6RXVJ1EXS6ET210Q','áhbadas','abcd123@gmail.com','0345678911','$2b$10$d4j0vxzf5Krh60rdY4KbBeyR2vO0Kul0WOpJv3N1rw3hz2o1c/LWO','1',1,'2025-12-30 19:54:48'),('01KDQRNA399RXFTGRCGVGDSX3R','aet','vutru86hs868@gmail.com','0362456789','$2b$10$Em2eDyzTBLCev.xJbg5x5eBb38ryTSLfvj82MebHMdGhnVZ9FEGLa','1',1,'2025-12-30 20:55:16'),('01KDS2HCB7BGYNEK2SV90RX0ZX','shan123','abc11@gmail.com','0345678913','$2b$10$IYsIGUrwm5eJsvT1uIg1p.Hkzwa4mo0TnWqnbclTeW6Hiz6QQgJbe','1',1,'2025-12-31 09:07:08'),('admin-id','Admin','admin@gmail.com','0387428939','$2b$10$xZ9TtCWJhk3nKOa5UW/JAOqqRUHwDSEs.eZrJeTRw5cggvrtgNN3y','2',1,'2025-12-30 19:17:33');
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `userrecommendation`
+--
+
+DROP TABLE IF EXISTS `userrecommendation`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `userrecommendation` (
+  `userId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `songId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `score` float DEFAULT NULL,
+  `generatedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`userId`,`songId`),
+  KEY `songId` (`songId`),
+  CONSTRAINT `UserRecommendation_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `UserRecommendation_ibfk_2` FOREIGN KEY (`songId`) REFERENCES `song` (`songId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `userrecommendation`
+--
+
+LOCK TABLES `userrecommendation` WRITE;
+/*!40000 ALTER TABLE `userrecommendation` DISABLE KEYS */;
+/*!40000 ALTER TABLE `userrecommendation` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `usertrendprofile`
+--
+
+DROP TABLE IF EXISTS `usertrendprofile`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `usertrendprofile` (
+  `userId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `emotionId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `singerId` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `listenCount` int DEFAULT '0',
+  `likeCount` int DEFAULT '0',
+  `emotionWeight` float DEFAULT '0',
+  `likeWeight` float DEFAULT '0',
+  `singerWeight` float DEFAULT '0',
+  `lastUpdated` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`userId`,`singerId`,`emotionId`),
+  KEY `singerId` (`singerId`),
+  KEY `emotionId` (`emotionId`),
+  CONSTRAINT `UserTrendProfile_ibfk_1` FOREIGN KEY (`userId`) REFERENCES `user` (`userId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `UserTrendProfile_ibfk_2` FOREIGN KEY (`singerId`) REFERENCES `singer` (`singerId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `UserTrendProfile_ibfk_3` FOREIGN KEY (`emotionId`) REFERENCES `emotion` (`emotionId`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `usertrendprofile`
+--
+
+LOCK TABLES `usertrendprofile` WRITE;
+/*!40000 ALTER TABLE `usertrendprofile` DISABLE KEYS */;
+/*!40000 ALTER TABLE `usertrendprofile` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-06-29  4:18:13
