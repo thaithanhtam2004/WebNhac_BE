@@ -240,7 +240,7 @@ const SongRepository = {
 
   // 🟢 Tìm kiếm tất cả
   async searchAll(query) {
-    if (!query || query.trim() === '') return { songs: [], singers: [], genres: [] };
+    if (!query || query.trim() === '') return { songs: [], singers: [], genres: [], albums: [] };
     const searchTerm = `%${query}%`;
 
     const songSql = `
@@ -248,14 +248,20 @@ const SongRepository = {
       FROM Song s LEFT JOIN Singer si ON s.singerId = si.singerId
       WHERE s.title LIKE ? AND s.isHidden = 0 LIMIT 10
     `;
-    const singerSql = `SELECT singerId, name, imageUrl FROM Singer WHERE name LIKE ? LIMIT 5`;
-    const genreSql = `SELECT genreId, name FROM Genre WHERE name LIKE ? LIMIT 5`;
+    const singerSql = `SELECT singerId, name, imageUrl FROM Singer WHERE name LIKE ? AND isHidden = 0 LIMIT 5`;
+    const genreSql = `SELECT genreId, name FROM Genre WHERE name LIKE ? AND isHidden = 0 LIMIT 5`;
+    const albumSql = `
+      SELECT a.albumId, a.name AS title, a.coverUrl, si.name AS singerName
+      FROM Album a LEFT JOIN Singer si ON a.singerId = si.singerId
+      WHERE a.name LIKE ? AND a.isHidden = 0 LIMIT 5
+    `;
 
     const [songs] = await pool.query(songSql, [searchTerm]);
     const [singers] = await pool.query(singerSql, [searchTerm]);
     const [genres] = await pool.query(genreSql, [searchTerm]);
+    const [albums] = await pool.query(albumSql, [searchTerm]);
 
-    return { songs, singers, genres };
+    return { songs, singers, genres, albums };
   },
 
   async findBySingerId(singerId) {
